@@ -48,7 +48,7 @@ keywords:
   - CIDOC CRM
   - linked open data
 license: CC-BY-4.0
-repository-code: "https://github.com/uibk-inventaria/REPOSITORY"
+repository-code: "https://github.com/uibk-inventaria/thesaurus"
 url: "https://www.inventaria.at/"
 # Nach dem ersten Zenodo-Release die Concept-DOI eintragen und die Kommentarzeichen entfernen:
 # doi: 10.5281/zenodo.XXXXXXX
