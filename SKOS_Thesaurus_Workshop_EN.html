@@ -1,0 +1,1550 @@
+<title>SKOS Thesaurus Workshop</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: Werkbank mit drei Spalten – Arbeitsthesaurus (Baum) | Karteikarte des Begriffs | Bibliothek fremder Thesauri; am Telefon Reiter */
+:root {
+  --bg: #eef2f1; --panel: #ffffff; --ink: #17242a; --muted: #5a6b72; --line: #d5dfdd; --hover: #f2f6f5;
+  --accent: #1c6a6f; --accent-ink: #ffffff; --accent-soft: #dcecea;
+  --ext: #8f5f0c; --ext-soft: #f5ead3; --danger: #ad3434; --danger-soft: #f7e1e1; --ok: #2c7a4b;
+  --drop: #b9dcd9; --shadow: 0 8px 28px rgba(20, 40, 45, .18);
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-head: "IBM Plex Sans Condensed", "IBM Plex Sans", "Arial Narrow", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1416; --panel: #152024; --ink: #e1eaea; --muted: #93a5aa; --line: #26363b; --hover: #1b2a2f;
+  --accent: #5db0b3; --accent-ink: #0e1416; --accent-soft: #173a3c;
+  --ext: #dcaa52; --ext-soft: #3a2d15; --danger: #e07a7a; --danger-soft: #3d1f1f; --ok: #6cc28f;
+  --drop: #245457; --shadow: 0 8px 28px rgba(0, 0, 0, .5); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e1416; --panel: #152024; --ink: #e1eaea; --muted: #93a5aa; --line: #26363b; --hover: #1b2a2f;
+  --accent: #5db0b3; --accent-ink: #0e1416; --accent-soft: #173a3c;
+  --ext: #dcaa52; --ext-soft: #3a2d15; --danger: #e07a7a; --danger-soft: #3d1f1f; --ok: #6cc28f;
+  --drop: #245457; --shadow: 0 8px 28px rgba(0, 0, 0, .5); color-scheme: dark }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--f-ui); display: flex; flex-direction: column;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); box-sizing: border-box; }
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); font-size: 12px; }
+.muted { color: var(--muted); }
+
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding-block: 10px 8px; }
+header.top h1 { font: 600 19px/1.1 var(--f-head); letter-spacing: .01em; margin: 0; display: flex; align-items: baseline; gap: 8px; }
+header.top h1 { flex-wrap: wrap; min-width: 0; }
+header.top h1 small { font: 400 12px var(--f-mono); color: var(--muted); word-break: break-all; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 5px 10px; line-height: 1.2; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.danger { color: var(--danger); }
+.btn.danger.armed { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn.small { padding: 2px 7px; font-size: 12px; }
+.langsel { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
+.langsel select { border: 1px solid var(--line); border-radius: 5px; padding: 1px 4px; background: var(--bg); font-size: 12px; max-width: 120px; }
+.row .fl { font: 10px var(--f-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; flex: none; }
+.btn:disabled { opacity: .45; cursor: default; }
+.menu { position: relative; }
+.menu > .pop { position: absolute; right: 0; top: calc(100% + 4px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 6px; z-index: 30; min-width: 250px; display: grid; gap: 2px; }
+.menu > .pop button { text-align: left; border: 0; background: none; padding: 7px 10px; border-radius: 5px; }
+.menu > .pop button:hover { background: var(--hover); }
+.menu > .pop .sep { height: 1px; background: var(--line); margin: 4px 2px; }
+.status { font-size: 12px; color: var(--muted); padding-block: 0 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.status b { color: var(--ink); font-weight: 500; }
+
+.tabs { display: none; gap: 4px; padding-block: 0 8px; }
+.tabs button { flex: 1; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 6px; }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.25fr) minmax(0, .95fr); gap: 12px; padding-block: 0 12px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-height: 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.panel > .ph { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.panel > .ph h2 { font: 600 13px var(--f-head); text-transform: uppercase; letter-spacing: .06em; margin: 0; color: var(--muted); }
+.panel > .ph .grow { flex: 1; }
+.panel > .pb { flex: 1; overflow: auto; min-height: 0; }
+.search { padding: 8px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 6px; }
+.search input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; background: var(--bg); }
+.hint { font-size: 12px; color: var(--muted); padding: 6px 12px; border-bottom: 1px solid var(--line); }
+.hint kbd { font: 500 11px var(--f-mono); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; background: var(--bg); }
+
+.tree { padding: 6px 4px 30px; }
+.row { display: flex; align-items: center; gap: 4px; padding: 2px 6px 2px 0; border-radius: 5px; cursor: pointer; user-select: none; min-height: 25px; }
+.row:hover { background: var(--hover); }
+.row.sel { background: var(--accent-soft); }
+.row.drop { background: var(--drop); outline: 1px dashed var(--accent); }
+.row .tg { width: 18px; flex: none; text-align: center; color: var(--muted); font-size: 11px; }
+.row .lb { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .id { font: 11px var(--f-mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
+.row .n { font: 11px var(--f-mono); color: var(--muted); margin-left: auto; padding-left: 6px; flex: none; }
+.row.ref .lb { font-style: italic; color: var(--muted); }
+.row.grp .lb { font-weight: 600; }
+.badge { font: 500 10px var(--f-mono); padding: 0 5px; border-radius: 3px; background: var(--ext-soft); color: var(--ext); flex: none; text-transform: uppercase; letter-spacing: .03em; }
+.badge.new { background: var(--accent-soft); color: var(--accent); }
+.topdrop { margin: 6px 8px; padding: 6px; border: 1px dashed var(--line); border-radius: 6px; text-align: center; font-size: 12px; color: var(--muted); }
+.topdrop.drop { background: var(--drop); border-color: var(--accent); color: var(--ink); }
+.results .row { padding-left: 8px; }
+.results .path { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.card { padding: 14px 16px 40px; display: grid; gap: 16px; }
+.card .head { display: grid; gap: 4px; }
+.card .head .title { font: 600 22px/1.2 var(--f-head); text-wrap: balance; margin: 0; }
+.card .head .uri { font: 12px var(--f-mono); color: var(--muted); word-break: break-all; }
+.card .head .uri a { color: inherit; }
+.warn { background: var(--ext-soft); color: var(--ext); border-radius: 6px; padding: 6px 10px; font-size: 12px; }
+.sec { display: grid; gap: 6px; }
+.sec > h3 { font: 600 12px var(--f-head); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 0; display: flex; align-items: center; gap: 8px; }
+.sec > h3 .btn { text-transform: none; letter-spacing: 0; font-family: var(--f-ui); font-weight: 400; }
+.lrow { display: grid; grid-template-columns: 92px minmax(0, 1fr) 28px; gap: 6px; align-items: start; }
+.lrow input, .lrow textarea, .field input, .field select { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; background: var(--bg); min-width: 0; }
+.lrow textarea { resize: vertical; min-height: 54px; }
+.lrow .x { border: 0; background: none; color: var(--muted); padding: 5px 0; }
+.lrow .x:hover { color: var(--danger); }
+.field { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 6px; align-items: center; }
+.field label { font-size: 12px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.extlink { color: var(--accent); text-decoration: none; word-break: break-all; }
+.extlink:hover { text-decoration: underline; }
+.jump { color: var(--ink); cursor: pointer; }
+.jump:hover { text-decoration: underline; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 14px; padding: 2px 4px 2px 10px; background: var(--bg); max-width: 100%; }
+.chip > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.chip > span:hover { text-decoration: underline; }
+.chip .x { border: 0; background: none; color: var(--muted); padding: 0 4px; }
+.chip .x:hover { color: var(--danger); }
+.chip.ext { border-color: var(--ext); }
+.picker { position: relative; }
+.picker input { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; background: var(--bg); }
+.picker .list { position: absolute; left: 0; right: 0; top: calc(100% + 2px); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow); max-height: 260px; overflow: auto; z-index: 20; }
+.picker .list button { display: flex; width: 100%; gap: 8px; border: 0; background: none; text-align: left; padding: 5px 8px; }
+.picker .list button:hover, .picker .list button.on { background: var(--hover); }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 10px; font-size: 12px; }
+.kv dt { color: var(--muted); font-family: var(--f-mono); }
+.kv dd { margin: 0; word-break: break-word; }
+.empty { padding: 40px 20px; color: var(--muted); text-align: center; display: grid; gap: 10px; justify-items: center; }
+.empty strong { color: var(--ink); font: 600 16px var(--f-head); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.lib .src { border-bottom: 1px solid var(--line); }
+.lib .srch { display: flex; align-items: center; gap: 6px; padding: 7px 10px; cursor: pointer; }
+.lib .srch:hover { background: var(--hover); }
+.lib .srch .nm { font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lib .tree { padding-top: 0; }
+
+dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0; background: var(--panel); color: var(--ink); box-shadow: var(--shadow); width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 40px); }
+dialog::backdrop { background: rgba(10, 20, 24, .45); }
+dialog .dh { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); gap: 10px; }
+dialog .dh h2 { font: 600 17px var(--f-head); margin: 0; flex: 1; }
+dialog .db { padding: 14px 16px; display: grid; gap: 12px; overflow: auto; max-height: calc(100vh - 170px); }
+dialog .df { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+dialog p { margin: 0; }
+.tbl { overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+.tbl table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+.tbl th { background: var(--hover); font-weight: 500; position: sticky; top: 0; }
+.tbl input, .tbl select { width: 100%; min-width: 70px; border: 1px solid var(--line); border-radius: 4px; padding: 3px 5px; background: var(--bg); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.grid2 label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.grid2 input, .grid2 select, dialog textarea { border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; background: var(--bg); width: 100%; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.progress { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.progress > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.log { font: 12px var(--f-mono); background: var(--bg); border-radius: 6px; padding: 8px; max-height: 180px; overflow: auto; white-space: pre-wrap; }
+.issue { display: flex; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.issue .k { font: 11px var(--f-mono); padding: 1px 6px; border-radius: 3px; background: var(--danger-soft); color: var(--danger); flex: none; align-self: start; }
+.issue .k.w { background: var(--ext-soft); color: var(--ext); }
+.issue a { cursor: pointer; color: var(--accent); }
+.dropmenu { position: fixed; z-index: 50; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; min-width: 230px; }
+.dropmenu button { text-align: left; border: 0; background: none; padding: 7px 10px; border-radius: 5px; }
+.dropmenu button:hover { background: var(--hover); }
+.dropmenu .t { font-size: 12px; color: var(--muted); padding: 4px 10px; }
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--panel); padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 60; max-width: calc(100vw - 32px); box-shadow: var(--shadow); }
+.filedrop { position: fixed; inset: 0; background: rgba(28, 106, 111, .18); border: 3px dashed var(--accent); z-index: 70; display: grid; place-items: center; font: 600 20px var(--f-head); color: var(--ink); pointer-events: none; }
+
+@media (max-width: 900px) {
+  .tabs { display: flex; }
+  main { grid-template-columns: minmax(0, 1fr); }
+  main > .panel { display: none; }
+  main > .panel.on { display: flex; }
+  .toolbar { margin-left: 0; }
+  .lrow { grid-template-columns: 76px minmax(0, 1fr) 24px; }
+  .field { grid-template-columns: 76px minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <h1>SKOS Thesaurus Workshop <small id="projName"></small></h1>
+  <div class="toolbar">
+    <button class="btn" id="bUndo" title="Undo last change" disabled>↶ Undo</button>
+    <div class="menu"><button class="btn" data-menu="mLoad">Load ▾</button>
+      <div class="pop" id="mLoad" hidden>
+        <button data-act="openWorking">Open SKOS thesaurus as working thesaurus (.ttl, .rdf, .nt, .nq, .trig)…</button>
+        <button data-act="openLibrary">Load SKOS thesaurus into the library (BBT, AAT …)…</button>
+        <div class="sep"></div>
+        <button data-act="openExcel">Import concepts from Excel…</button>
+        <button data-act="openMindmap">Import hierarchy from mind map (.mmap, .mm, .opml)…</button>
+        <button data-act="openAat">Take over AAT concepts from the Getty dump…</button>
+        <div class="sep"></div>
+        <button data-act="openProject">Open project file (.json)…</button>
+        <button data-act="newProject">New, empty project…</button>
+      </div></div>
+    <div class="menu"><button class="btn" data-menu="mSave">Save ▾</button>
+      <div class="pop" id="mSave" hidden>
+        <button data-act="exportTtl">SKOS as Turtle (.ttl)</button>
+        <button data-act="exportNq">N-Quads with graphs (.nq): working thesaurus + library concepts used</button>
+        <button data-act="copyTtl">Copy SKOS Turtle to clipboard</button>
+        <button data-act="exportXlsx">Concept list as Excel (.xlsx)</button>
+        <button data-act="exportMindmap">Mind map for MindManager (.mmap)</button>
+        <button data-act="exportMm">Mind map in FreeMind format (.mm)</button>
+        <div class="sep"></div>
+        <button data-act="saveProject">Project file (.json) – complete working state</button>
+      </div></div>
+    <button class="btn" data-act="prefixes">Prefixes &amp; IDs</button>
+    <button class="btn" data-act="validate">Validate</button>
+  </div>
+</header>
+<div class="status" id="status"></div>
+<div class="tabs" role="tablist">
+  <button role="tab" data-tab="pTree" aria-selected="true">Tree</button>
+  <button role="tab" data-tab="pCard" aria-selected="false">Concept</button>
+  <button role="tab" data-tab="pLib" aria-selected="false">Library</button>
+</div>
+<main>
+  <section class="panel on" id="pTree">
+    <div class="ph"><h2>Working thesaurus</h2><span class="grow"></span>
+      <label class="langsel" title="Language of the labels in the tree and the library. If a concept has no label in this language, an available language is shown (marked with its language tag).">Language <select id="treeLang"></select></label>
+      <button class="btn small" data-act="collapseAll" title="Collapse all">Collapse</button>
+      <button class="btn small primary" data-act="newTop">+ Concept</button></div>
+    <div class="search"><input id="q" type="search" placeholder="Search: label, spelling, ID …" autocomplete="off"></div>
+    <div class="hint">Drag = <b>move</b> · with <kbd>Ctrl</kbd>/<kbd>⌥</kbd> = <b>add as additional parent</b> (polyhierarchy) · drag from the library = take over</div>
+    <div class="pb" id="treeBox"></div>
+  </section>
+  <section class="panel" id="pCard">
+    <div class="ph"><h2>Concept</h2><span class="grow"></span><span id="cardBadges"></span></div>
+    <div class="pb" id="cardBox"></div>
+  </section>
+  <section class="panel" id="pLib">
+    <div class="ph"><h2>Library</h2><span class="grow"></span>
+      <button class="btn small" data-act="openLibrary">+ Thesaurus</button></div>
+    <div class="search"><input id="qLib" type="search" placeholder="Search the library …" autocomplete="off"></div>
+    <div class="pb lib" id="libBox"></div>
+  </section>
+</main>
+
+<input type="file" id="fileIn" hidden>
+<dialog id="dlg"><div class="dh"><h2 id="dlgTitle"></h2><button class="btn small" data-close>Close</button></div><div class="db" id="dlgBody"></div><div class="df" id="dlgFoot"></div></dialog>
+<div id="toast" hidden></div>
+<datalist id="langs"><option value="de"><option value="en"><option value="it"><option value="fr"><option value="la"><option value="de-x-hist"><option value="el"></datalist>
+
+<script src="https://cdn.jsdelivr.net/npm/n3@1.17.2/browser/n3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+'use strict';
+/* ================= Namensräume ================= */
+const NS = {
+  skos: 'http://www.w3.org/2004/02/skos/core#', rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+  rdfs: 'http://www.w3.org/2000/01/rdf-schema#', dct: 'http://purl.org/dc/terms/', dc: 'http://purl.org/dc/elements/1.1/',
+  owl: 'http://www.w3.org/2002/07/owl#', xsd: 'http://www.w3.org/2001/XMLSchema#', xl: 'http://www.w3.org/2008/05/skos-xl#',
+  gvp: 'http://vocab.getty.edu/ontology#'
+};
+const SK = n => NS.skos + n;
+const MATCH = ['exactMatch', 'closeMatch', 'broadMatch', 'narrowMatch', 'relatedMatch'];
+const AAT_NS = 'http://vocab.getty.edu/aat/';
+const LANG_ORDER = ['en', 'de', 'it', 'fr', 'la'];
+
+/* ================= Zustand ================= */
+let P;                 // Projekt
+const C = new Map();   // URI -> Begriff
+const SRC = new Map(); // Quellen der Bibliothek
+let SEL = null;        // ausgewählter Begriff
+let IDX = null;        // Unterbegriffs-Index
+const OPEN = new Set();     // aufgeklappte Pfade im Baum
+const OPENLIB = new Set();  // aufgeklappte Pfade in der Bibliothek
+const UNDO = [];
+function freshProject() {
+  return { name: 'New thesaurus', scheme: 'http://example.org/thesaurus', schemeLabel: { en: 'New thesaurus' },
+    prefixes: [{ p: 'aat', ns: AAT_NS, digits: 9, own: false }, { p: 'bbt', ns: 'https://vocabs.dariah.eu/bbt/Concept/', digits: 6, own: false }],
+    defaultPrefix: '', passthrough: [], uiLang: 'en', dispLang: '', loaded: [] };
+}
+function newConcept(uri) {
+  return { uri, notation: '', pref: {}, alt: [], def: [], scope: [], note: [], broader: [], related: [],
+    match: { exactMatch: [], closeMatch: [], broadMatch: [], narrowMatch: [], relatedMatch: [] },
+    schemes: new Set(), src: new Set(), extra: [] };
+}
+function getC(uri, create) { let c = C.get(uri); if (!c && create) { c = newConcept(uri); C.set(uri, c); } return c; }
+const inW = c => c && c.schemes.has(P.scheme);
+
+/* ================= Hilfen ================= */
+const $ = s => document.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+let toastT;
+function toast(msg, ms = 3200) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms); }
+const dispLang = () => P.dispLang || P.uiLang || 'en';
+// Sprache, in der ein Label gezeigt wird: gewählte Sprache, dann gleiche Grundsprache (en-gb für en), dann LANG_ORDER, dann irgendeine
+function pickLang(c, L) {
+  if (!c) return null;
+  if (c.pref[L]) return L;
+  const base = L.split('-')[0];
+  for (const l of Object.keys(c.pref).sort(langSort)) if (c.pref[l] && l.split('-')[0] === base) return l;
+  for (const l of LANG_ORDER) if (c.pref[l]) return l;
+  for (const l of Object.keys(c.pref).sort(langSort)) if (c.pref[l]) return l;
+  return null;
+}
+function lab(c, lang) {
+  if (!c) return '';
+  const l = pickLang(c, lang || dispLang());
+  return l != null ? c.pref[l] : curie(c.uri);
+}
+function fillLangSel() {
+  const sel = $('#treeLang'); if (!sel) return;
+  const n = new Map(); for (const c of C.values()) for (const [l, v] of Object.entries(c.pref)) if (v && l) n.set(l, (n.get(l) || 0) + 1);
+  const cur = dispLang(); if (!n.has(cur)) n.set(cur, 0);
+  sel.replaceChildren(...[...n.keys()].sort(langSort).map(l => h('option', { value: l, text: l + (n.get(l) ? ' (' + n.get(l) + ')' : ''), selected: l === cur })));
+}
+// URI als anklickbarer Link (öffnet in neuem Tab); Nicht-HTTP-URIs bleiben Text
+function linkTo(u) {
+  return /^https?:\/\//i.test(u) ? h('a', { class: 'extlink mono', href: u, target: '_blank', rel: 'noopener noreferrer', title: 'Open link in new tab', text: u }) : h('span', { class: 'mono', text: u });
+}
+function labU(u) { const c = C.get(u); return c ? lab(c) : curie(u); }
+function curie(u) {
+  let best = null;
+  for (const x of P.prefixes) if (u.startsWith(x.ns) && (!best || x.ns.length > best.ns.length)) best = x;
+  return best ? best.p + ':' + u.slice(best.ns.length) : u;
+}
+function cid(c) { return c.notation || curie(c.uri); }
+function expand(s) {
+  s = String(s ?? '').trim(); if (!s) return '';
+  if (/^https?:\/\//.test(s)) return s.replace('http://vocab.getty.edu/page/aat/', AAT_NS);
+  const m = s.match(/^([A-Za-z][\w.-]*):(.+)$/);
+  if (m) { const x = P.prefixes.find(x => x.p === m[1]); if (x) return x.ns + m[2]; }
+  return '';
+}
+function extKind(u) {
+  if (u.startsWith(AAT_NS)) return 'AAT';
+  if (u.startsWith('https://vocabs.dariah.eu/bbt/')) return 'BBT';
+  const own = P.prefixes.some(x => x.own && u.startsWith(x.ns));
+  if (own || u.startsWith(P.scheme)) return '';
+  for (const s of SRC.values()) if (s.kind && s.uris.has(u)) return s.kind;
+  return 'EXT';
+}
+function norm(s) { return String(s ?? '').replace(/\s+/g, ' ').trim(); }
+function langSort(a, b) { const ia = LANG_ORDER.indexOf(a), ib = LANG_ORDER.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b); }
+
+/* ================= Rückgängig ================= */
+let TX = null;
+function ser(c) { return c ? JSON.stringify({ ...c, schemes: [...c.schemes], src: [...c.src] }) : null; }
+function deser(s) { const o = JSON.parse(s); o.schemes = new Set(o.schemes); o.src = new Set(o.src); return o; }
+function touch(uri) { if (!TX) TX = { label: '', before: new Map() }; if (!TX.before.has(uri)) TX.before.set(uri, ser(C.get(uri))); }
+function commit(label) {
+  if (!TX) return; TX.label = label; UNDO.push(TX); if (UNDO.length > 80) UNDO.shift(); TX = null;
+  $('#bUndo').disabled = false; $('#bUndo').title = 'Undo: ' + label; changed();
+}
+function undo() {
+  const t = UNDO.pop(); if (!t) return;
+  for (const [u, s] of t.before) { if (s == null) C.delete(u); else C.set(u, deser(s)); }
+  $('#bUndo').disabled = !UNDO.length; toast('Undone: ' + t.label); changed(true);
+}
+
+/* ================= Index & Hierarchie ================= */
+function buildIndex() {
+  const kids = new Map(); const wkids = new Map();
+  for (const c of C.values()) for (const b of c.broader) {
+    if (!kids.has(b)) kids.set(b, []); kids.get(b).push(c.uri);
+    if (inW(c) && inW(C.get(b))) { if (!wkids.has(b)) wkids.set(b, []); wkids.get(b).push(c.uri); }
+  }
+  const sortF = (a, b) => { const ca = C.get(a), cb = C.get(b); const ga = (wkids.get(a) || []).length > 0, gb = (wkids.get(b) || []).length > 0;
+    return (gb - ga) || lab(ca).localeCompare(lab(cb), 'de'); };
+  for (const v of wkids.values()) v.sort(sortF);
+  const roots = [...C.values()].filter(c => inW(c) && !c.broader.some(b => inW(C.get(b)))).map(c => c.uri).sort(sortF);
+  IDX = { kids, wkids, roots };
+}
+const wParents = c => c.broader.filter(b => inW(C.get(b)));
+function descendantsW(u, acc = new Set()) { for (const k of IDX.wkids.get(u) || []) if (!acc.has(k)) { acc.add(k); descendantsW(k, acc); } return acc; }
+function isAncestor(a, u, seen = new Set()) {  // ist a Vorfahre von u (über alle broader)?
+  const c = C.get(u); if (!c || seen.has(u)) return false; seen.add(u);
+  return c.broader.some(b => b === a || isAncestor(a, b, seen));
+}
+function pathOf(u) { const out = []; let c = C.get(u), guard = 0; while (c && guard++ < 50) { const p = wParents(c)[0]; if (!p) break; out.unshift(p); c = C.get(p); } return out; }
+
+/* ================= Parser ================= */
+function termFromN3(t) {
+  if (t.termType === 'NamedNode') return { t: 'u', v: t.value };
+  if (t.termType === 'BlankNode') return { t: 'b', v: t.value };
+  return { t: 'l', v: t.value, l: t.language || '', d: t.language ? '' : (t.datatype && t.datatype.value !== NS.xsd + 'string' ? t.datatype.value : '') };
+}
+function isQuadFile(name) { return /\.(nq|trig)$/i.test(name); }
+function parseQuads(text, name) {
+  const fmt = /\.trig$/i.test(name) ? 'TriG' : 'N-Quads';
+  return new N3.Parser({ format: fmt }).parse(text).map(q => ({ s: termFromN3(q.subject), p: q.predicate.value, o: termFromN3(q.object), g: q.graph.value || '' }));
+}
+function parseRdf(text, name) {
+  const low = name.toLowerCase();
+  if (isQuadFile(low)) return parseQuads(text, name);
+  if (/\.(rdf|owl|xml)$/.test(low) || /^\s*(<\?xml|<rdf:RDF)/.test(text)) return parseRdfXml(text);
+  const fmt = /\.nt$/.test(low) ? 'N-Triples' : 'Turtle';
+  const parser = new N3.Parser({ format: fmt });
+  return parser.parse(text).map(q => ({ s: termFromN3(q.subject), p: q.predicate.value, o: termFromN3(q.object) }));
+}
+function parseRdfXml(text) {
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  if (doc.querySelector('parsererror')) throw new Error('RDF/XML cannot be read');
+  const R = NS.rdf, XMLNS = 'http://www.w3.org/XML/1998/namespace';
+  const out = []; let bn = 0;
+  const base = doc.documentElement.getAttributeNS(XMLNS, 'base') || '';
+  const res = v => (/^[a-z][\w+.-]*:/i.test(v) ? v : base + v);
+  const lang = e => { for (let x = e; x && x.nodeType === 1; x = x.parentNode) { const l = x.getAttributeNS(XMLNS, 'lang'); if (l != null && l !== '') return l; } return ''; };
+  const iri = e => (e.namespaceURI || '') + e.localName;
+  function node(e) {
+    let s;
+    if (e.hasAttributeNS(R, 'about')) s = { t: 'u', v: res(e.getAttributeNS(R, 'about')) };
+    else if (e.hasAttributeNS(R, 'ID')) s = { t: 'u', v: base + '#' + e.getAttributeNS(R, 'ID') };
+    else if (e.hasAttributeNS(R, 'nodeID')) s = { t: 'b', v: e.getAttributeNS(R, 'nodeID') };
+    else s = { t: 'b', v: 'x' + (++bn) };
+    if (iri(e) !== R + 'Description') out.push({ s, p: R + 'type', o: { t: 'u', v: iri(e) } });
+    for (const a of e.attributes) {
+      if (a.namespaceURI === R || a.namespaceURI === XMLNS || a.namespaceURI === 'http://www.w3.org/2000/xmlns/' || !a.namespaceURI) continue;
+      out.push({ s, p: a.namespaceURI + a.localName, o: { t: 'l', v: a.value, l: lang(e), d: '' } });
+    }
+    for (const pe of e.children) {
+      const p = iri(pe);
+      if (pe.hasAttributeNS(R, 'resource')) { out.push({ s, p, o: { t: 'u', v: res(pe.getAttributeNS(R, 'resource')) } }); continue; }
+      if (pe.hasAttributeNS(R, 'nodeID')) { out.push({ s, p, o: { t: 'b', v: pe.getAttributeNS(R, 'nodeID') } }); continue; }
+      if (pe.getAttributeNS(R, 'parseType') === 'Resource') {
+        const b = { t: 'b', v: 'x' + (++bn) }; out.push({ s, p, o: b });
+        const fake = pe.cloneNode(true); fake.setAttributeNS(R, 'rdf:nodeID', b.v); node(fake); continue;
+      }
+      if (pe.children.length) { const o = node(pe.children[0]); out.push({ s, p, o }); continue; }
+      out.push({ s, p, o: { t: 'l', v: pe.textContent, l: lang(pe), d: pe.getAttributeNS(R, 'datatype') || '' } });
+    }
+    return s;
+  }
+  for (const e of doc.documentElement.children) node(e);
+  return out;
+}
+
+/* ================= Einlesen von SKOS ================= */
+function registerPrefixesFrom(uris) {
+  const found = new Map();
+  for (const u of uris) {
+    const m = u.match(/^(https?:\/\/.*\/)([a-z][a-z0-9_]*):(\d+)$/i);
+    if (m) { const k = m[2]; const ns = m[1] + k + ':'; if (!found.has(k)) found.set(k, { ns, digits: m[3].length, n: 0 }); found.get(k).n++; }
+  }
+  for (const [p, f] of found) if (!P.prefixes.some(x => x.p === p)) P.prefixes.push({ p, ns: f.ns, digits: f.digits, own: true });
+  if (!P.defaultPrefix) { const best = [...found.entries()].sort((a, b) => b[1].n - a[1].n)[0]; if (best) P.defaultPrefix = best[0]; }
+}
+// Werte aus Dateien bleiben unverändert (wichtig für den Abgleich mit Originaldaten); verglichen wird normalisiert
+function addAlt(c, v, l) { v = String(v ?? ''); const n = norm(v).toLowerCase(); if (!n) return; if (Object.entries(c.pref).some(([pl, pv]) => norm(pv).toLowerCase() === n && (pl === l || !l))) return;
+  if (!c.alt.some(([av, al]) => norm(av).toLowerCase() === n && al === l)) c.alt.push([v, l]); }
+function addList(list, v, l) { v = String(v ?? ''); if (v.trim() && !list.some(([a, b]) => a.trim() === v.trim() && b === l)) list.push([v, l]); }
+function addU(list, u) { if (u && !list.includes(u)) list.push(u); }
+
+function ingest(triples, srcInfo, opts = {}) {
+  const bySub = new Map();
+  for (const t of triples) { const k = t.s.t + '|' + t.s.v; if (!bySub.has(k)) bySub.set(k, []); bySub.get(k).push(t); }
+  const isType = (ts, cls) => ts.some(t => t.p === NS.rdf + 'type' && t.o.v === cls);
+  const SKOSP = new Set(['prefLabel', 'altLabel', 'broader', 'narrower', 'inScheme', 'topConceptOf', 'definition', 'notation'].map(SK));
+  const schemes = []; const conceptUris = []; const pass = []; const narrowerLater = [];
+  const nodeVal = new Map(); // Blank-Node/URI -> rdf:value (für Notizen als Ressourcen)
+  for (const ts of bySub.values()) for (const t of ts) if (t.p === NS.rdf + 'value' && t.o.t === 'l') nodeVal.set(t.s.v, t.o);
+  const lit = o => (o.t === 'l' ? o : nodeVal.get(o.v));
+  const prefOverride = opts.prefOverride;
+  for (const [k, ts] of bySub) {
+    const s = ts[0].s;
+    if (s.t !== 'u') { if (!ts.some(t => t.p === NS.rdf + 'value')) pass.push(...ts); continue; }
+    if (isType(ts, SK('ConceptScheme'))) { schemes.push({ uri: s.v, ts }); continue; }
+    const concept = isType(ts, SK('Concept')) || (!isType(ts, SK('Collection')) && ts.some(t => SKOSP.has(t.p)));
+    if (!concept) { pass.push(...ts); continue; }
+    const existed = C.has(s.v);
+    const c = getC(s.v, true); conceptUris.push(s.v); c.src.add(srcInfo.id);
+    for (const t of ts) {
+      const p = t.p, o = t.o, L = lit(o);
+      if (p === SK('prefLabel') && L) {
+        const l = L.l || '';
+        if (!c.pref[l]) c.pref[l] = L.v;
+        else if (norm(c.pref[l]) !== norm(L.v)) {
+          if (prefOverride && existed) { const old = c.pref[l]; c.pref[l] = L.v; addAlt(c, old, l); } else addAlt(c, L.v, l);
+        }
+      } else if (p === SK('altLabel') && L) addAlt(c, L.v, L.l || '');
+      else if (p === SK('hiddenLabel') && L) addAlt(c, L.v, L.l || '');
+      else if (p === SK('definition') && L) addList(c.def, L.v, L.l || '');
+      else if (p === SK('scopeNote') && L) addList(c.scope, L.v, L.l || '');
+      else if (p === SK('note') && L) addList(c.note, L.v, L.l || '');
+      else if (p === SK('notation') && o.t === 'l') { if (!c.notation) c.notation = o.v; }
+      else if (p === SK('broader') && o.t === 'u') addU(c.broader, o.v);
+      else if (p === SK('narrower') && o.t === 'u') narrowerLater.push([o.v, s.v]);
+      else if ((p === SK('inScheme') || p === SK('topConceptOf')) && o.t === 'u') c.schemes.add(o.v);
+      else if (p === SK('related') && o.t === 'u') addU(c.related, o.v);
+      else if (MATCH.some(m => p === SK(m)) && o.t === 'u') addU(c.match[p.slice(NS.skos.length)], o.v);
+      else if (p === NS.rdf + 'type' && o.v === SK('Concept')) { /* implizit */ }
+      else if (o.t !== 'b' && !c.extra.some(x => x.p === p && x.o.v === o.v && x.o.l === o.l)) c.extra.push({ p, o });
+    }
+    if (!c.notation && srcInfo.kind === 'AAT') c.notation = s.v.slice(AAT_NS.length);
+  }
+  for (const [child, parent] of narrowerLater) { const c = C.get(child); if (c) addU(c.broader, parent); }
+  // Quelle registrieren
+  const src = SRC.get(srcInfo.id) || { id: srcInfo.id, name: srcInfo.name, kind: srcInfo.kind || '', uris: new Set(), schemes: [], raw: [], graph: '' };
+  for (const u of conceptUris) src.uris.add(u);
+  for (const s of schemes) if (!src.schemes.includes(s.uri)) src.schemes.push(s.uri);
+  if (srcInfo.id.startsWith('lib:')) {   // Originaldaten für den N-Quads-Export aufheben
+    const keep = new Set([...conceptUris, ...schemes.map(x => x.uri)]);
+    if (!src.raw) src.raw = [];
+    for (const t of triples) if (t.s.t === 'u' && keep.has(t.s.v) && t.o.t !== 'b') src.raw.push({ s: t.s, p: t.p, o: t.o });
+    src.graph = src.graph || srcInfo.graph || (schemes[0] && schemes[0].uri) || (srcInfo.kind === 'AAT' ? AAT_NS : '') || 'urn:x-skos-werkstatt:' + encodeURIComponent(srcInfo.name);
+  }
+  SRC.set(src.id, src);
+  registerPrefixesFrom(conceptUris);
+  // Präfixe aus Notationen ableiten: Notation „bda_befund:000001“ + URI „…/bda_befund/000001“ → Präfix bda_befund
+  const own = !srcInfo.id.startsWith('lib:');
+  const found = new Map();
+  for (const u of conceptUris) { const c = C.get(u); const m = (c.notation || '').match(/^([A-Za-z][\w.-]*):(\d+)$/); if (m && u.endsWith(m[2]) && !P.prefixes.some(x => x.p === m[1])) { const ns = u.slice(0, u.length - m[2].length); const k = m[1] + ' ' + ns; found.set(k, { p: m[1], ns, digits: m[2].length, n: (found.get(k) || { n: 0 }).n + 1 }); } }
+  for (const f of found.values()) if (f.n >= 2 && !P.prefixes.some(x => x.p === f.p)) { P.prefixes.push({ p: f.p, ns: f.ns, digits: f.digits, own }); if (own && !P.defaultPrefix) P.defaultPrefix = f.p; }
+  return { schemes, conceptUris, pass };
+}
+function schemeLabel(ts) { const o = {}; for (const t of ts) if ((t.p === SK('prefLabel') || t.p === NS.rdfs + 'label' || t.p === NS.dct + 'title') && t.o.t === 'l') o[t.o.l || ''] = o[t.o.l || ''] || t.o.v; return o; }
+
+function loadAsWorking(triples, name, keepCurrent) {
+  if (!keepCurrent) { C.clear(); SRC.clear(); P = freshProject(); UNDO.length = 0; $('#bUndo').disabled = true; OPEN.clear(); }
+  const r = ingest(triples, { id: 'file:' + name, name, kind: '' });
+  // Arbeitsschema: das Schema mit hasTopConcept, sonst das häufigste inScheme
+  const cnt0 = new Map(); for (const u of r.conceptUris) for (const s of C.get(u).schemes) cnt0.set(s, (cnt0.get(s) || 0) + 1);
+  let sch = [...r.schemes].sort((a, b) => (cnt0.get(b.uri) || 0) - (cnt0.get(a.uri) || 0))[0];
+  if (!sch) {
+    const cnt = new Map(); for (const u of r.conceptUris) for (const s of C.get(u).schemes) cnt.set(s, (cnt.get(s) || 0) + 1);
+    const best = [...cnt.entries()].sort((a, b) => b[1] - a[1])[0];
+    sch = best ? { uri: best[0], ts: [] } : { uri: 'http://example.org/thesaurus', ts: [] };
+    if (!best) for (const u of r.conceptUris) C.get(u).schemes.add(sch.uri);
+  }
+  P.scheme = sch.uri; P.schemeLabel = schemeLabel(sch.ts); if (!Object.keys(P.schemeLabel).length) P.schemeLabel = { de: name.replace(/\.\w+$/, '') };
+  P.name = P.schemeLabel.de || Object.values(P.schemeLabel)[0];
+  P.passthrough = [...sch.ts.filter(t => ![SK('hasTopConcept'), NS.rdf + 'type'].includes(t.p) && t.o.t !== 'b'), ...r.pass.filter(t => t.s.t === 'u')];
+  // Begriffe, die über topConceptOf/hasTopConcept zugeordnet sind
+  for (const t of sch.ts) if (t.p === SK('hasTopConcept') && C.get(t.o.v)) C.get(t.o.v).schemes.add(P.scheme);
+  P.loaded.push(name);
+  return r;
+}
+function loadIntoLibrary(triples, name, graph) {
+  const kind = /bbt|backbone/i.test(name + ' ' + (graph || '')) ? 'BBT' : /aat|getty/i.test(name + ' ' + (graph || '')) ? 'AAT' : 'EXT';
+  const r = ingest(triples, { id: 'lib:' + name, name, kind, graph });
+  P.loaded.push(name);
+  return r;
+}
+
+/* ================= Turtle-Ausgabe ================= */
+function ttlEsc(s) { return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t'); }
+function makeTtl() {
+  buildIndex();
+  const pre = [['skos', NS.skos], ['rdf', NS.rdf], ['rdfs', NS.rdfs], ['dct', NS.dct], ['owl', NS.owl], ['xsd', NS.xsd]];
+  for (const x of P.prefixes) if (/^[A-Za-z][\w-]*$/.test(x.p) && !pre.some(p => p[0] === x.p)) pre.push([x.p, x.ns]);
+  const used = new Set();
+  const U = u => {
+    let best = null; for (const [p, ns] of pre) if (u.startsWith(ns) && (!best || ns.length > best[1].length)) best = [p, ns];
+    if (best) { const loc = u.slice(best[1].length); if (/^[A-Za-z0-9_]([A-Za-z0-9_.:-]*[A-Za-z0-9_:-])?$/.test(loc) || loc === '') { used.add(best[0]); return best[0] + ':' + loc; } }
+    return '<' + u + '>';
+  };
+  const L = (v, l) => '"' + ttlEsc(v) + '"' + (l ? '@' + l : '');
+  const T = o => o.t === 'u' ? U(o.v) : '"' + ttlEsc(o.v) + '"' + (o.l ? '@' + o.l : o.d ? '^^' + U(o.d) : '');
+  const blocks = [];
+  const subj = (s, props) => { const lines = props.filter(p => p[1].length).map(([p, os]) => '    ' + p + ' ' + os.join(',\n        ')); if (lines.length) blocks.push(U(s) + '\n' + lines.join(' ;\n') + ' .'); };
+  const S = U(P.scheme);
+  const schemeProps = [['a', ['skos:ConceptScheme']], ['skos:prefLabel', Object.entries(P.schemeLabel).map(([l, v]) => L(v, l))],
+    ['skos:hasTopConcept', IDX.roots.map(U)]];
+  const passS = P.passthrough.filter(t => t.s.v === P.scheme);
+  const grp = new Map(); for (const t of passS) { if (!grp.has(t.p)) grp.set(t.p, []); grp.get(t.p).push(T(t.o)); }
+  for (const [p, os] of grp) schemeProps.push([U(p), os]);
+  subj(P.scheme, schemeProps);
+  const ws = [...C.values()].filter(inW).sort((a, b) => cid(a).localeCompare(cid(b), 'de', { numeric: true }));
+  for (const c of ws) {
+    const props = [['a', ['skos:Concept']], ['skos:inScheme', [...c.schemes].map(U)]];
+    if (c.notation) props.push(['skos:notation', [L(c.notation)]]);
+    props.push(['skos:prefLabel', Object.entries(c.pref).sort((a, b) => langSort(a[0], b[0])).map(([l, v]) => L(v, l))]);
+    props.push(['skos:altLabel', c.alt.map(([v, l]) => L(v, l))]);
+    props.push(['skos:definition', c.def.map(([v, l]) => L(v, l))]);
+    props.push(['skos:scopeNote', c.scope.map(([v, l]) => L(v, l))]);
+    props.push(['skos:note', c.note.map(([v, l]) => L(v, l))]);
+    props.push(['skos:broader', c.broader.map(U)]);
+    props.push(['skos:narrower', (IDX.kids.get(c.uri) || []).filter(k => inW(C.get(k))).map(U)]);
+    if (!wParents(c).length) props.push(['skos:topConceptOf', [S]]);
+    props.push(['skos:related', c.related.map(U)]);
+    for (const m of MATCH) props.push(['skos:' + m, c.match[m].map(U)]);
+    const eg = new Map(); for (const x of c.extra) { if (!eg.has(x.p)) eg.set(x.p, []); eg.get(x.p).push(T(x.o)); }
+    for (const [p, os] of eg) props.push([p === NS.rdf + 'type' ? 'a' : U(p), os]);
+    subj(c.uri, props);
+  }
+  const other = new Map(); for (const t of P.passthrough) if (t.s.v !== P.scheme) { if (!other.has(t.s.v)) other.set(t.s.v, new Map()); const m = other.get(t.s.v); if (!m.has(t.p)) m.set(t.p, []); m.get(t.p).push(T(t.o)); }
+  for (const [s, m] of other) subj(s, [...m].map(([p, os]) => [p === NS.rdf + 'type' ? 'a' : U(p), os]));
+  const head = pre.filter(([p]) => used.has(p) || p === 'skos').map(([p, ns]) => `@prefix ${p}: <${ns}> .`).join('\n');
+  return head + '\n\n' + blocks.join('\n\n') + '\n';
+}
+
+/* ================= N-Quads-Ausgabe ================= */
+function ownTriples() {
+  buildIndex();
+  const T = []; const U = v => ({ t: 'u', v }); const Lt = (v, l) => ({ t: 'l', v, l: l || '', d: '' });
+  const add = (s, p, o) => T.push({ s: U(s), p, o });
+  add(P.scheme, NS.rdf + 'type', U(SK('ConceptScheme')));
+  for (const [l, v] of Object.entries(P.schemeLabel)) add(P.scheme, SK('prefLabel'), Lt(v, l));
+  for (const r of IDX.roots) add(P.scheme, SK('hasTopConcept'), U(r));
+  for (const c of [...C.values()].filter(inW)) {
+    const u = c.uri;
+    add(u, NS.rdf + 'type', U(SK('Concept')));
+    for (const sc of c.schemes) if (sc === P.scheme || !extKind(u)) add(u, SK('inScheme'), U(sc));
+    if (c.notation) add(u, SK('notation'), Lt(c.notation));
+    for (const [l, v] of Object.entries(c.pref)) add(u, SK('prefLabel'), Lt(v, l));
+    for (const [k, p] of [['alt', 'altLabel'], ['def', 'definition'], ['scope', 'scopeNote'], ['note', 'note']]) for (const [v, l] of c[k]) add(u, SK(p), Lt(v, l));
+    for (const b of c.broader) add(u, SK('broader'), U(b));
+    for (const k of (IDX.kids.get(u) || [])) if (inW(C.get(k))) add(u, SK('narrower'), U(k));
+    if (!wParents(c).length) add(u, SK('topConceptOf'), U(P.scheme));
+    for (const r of c.related) add(u, SK('related'), U(r));
+    for (const m of MATCH) for (const x of c.match[m]) add(u, SK(m), U(x));
+    for (const x of c.extra) T.push({ s: U(u), p: x.p, o: x.o });
+  }
+  for (const t of P.passthrough) T.push(t);
+  return T;
+}
+function ntTerm(o) {
+  if (o.t === 'u') return '<' + o.v + '>';
+  if (o.t === 'b') return '_:' + o.v.replace(/[^A-Za-z0-9_]/g, '_');
+  return '"' + o.v.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"' + (o.l ? '@' + o.l : o.d ? '^^<' + o.d + '>' : '');
+}
+const tKey = t => t.s.v + '\u0001' + t.p + '\u0001' + t.o.t + '\u0001' + t.o.v + '\u0001' + (t.o.l || '') + '\u0001' + (t.o.d || '');
+function makeNq() {
+  const own = ownTriples();
+  const used = new Set([P.scheme]);
+  for (const c of C.values()) if (inW(c)) { used.add(c.uri); c.broader.forEach(b => used.add(b)); c.related.forEach(b => used.add(b)); for (const m of MATCH) c.match[m].forEach(b => used.add(b)); }
+  const lines = []; const orig = new Set(); const stats = [];
+  for (const s of SRC.values()) {
+    if (!s.raw || !s.raw.length || !s.graph) continue;
+    let n = 0; const seen = new Set();
+    for (const t of s.raw) {
+      if (!used.has(t.s.v) && !s.schemes.includes(t.s.v)) continue;
+      const k = tKey(t); orig.add(k); if (seen.has(k)) continue; seen.add(k);
+      lines.push(ntTerm(t.s) + ' <' + t.p + '> ' + ntTerm(t.o) + ' <' + s.graph + '> .'); n++;
+    }
+    stats.push(s.name + ': ' + n);
+  }
+  let n = 0; const seen = new Set();
+  for (const t of own) { const k = tKey(t); if (orig.has(k) || seen.has(k)) continue; seen.add(k); lines.push(ntTerm(t.s) + ' <' + t.p + '> ' + ntTerm(t.o) + ' <' + P.scheme + '> .'); n++; }
+  stats.unshift(P.name + ': ' + n);
+  return { text: lines.join('\n') + '\n', stats };
+}
+
+/* ================= Dateien speichern ================= */
+let DL = null; let dlTried = false;
+async function getDL() { if (dlTried) return DL; dlTried = true; try { DL = window.claude?.use ? await window.claude.use('downloads') : null; } catch (e) { DL = null; } return DL; }
+async function saveFile(filename, data) {
+  const dl = await getDL();
+  if (dl) {
+    try { await dl.save({ filename, data }); toast('Gespeichert: ' + filename); }
+    catch (e) { toast(e && e.code === 'declined' ? 'Saving cancelled.' : 'Saving not possible (' + (e && e.code || e) + ').'); }
+    return;
+  }
+  const blob = data instanceof Blob ? data : new Blob([data]);
+  const a = h('a', { href: URL.createObjectURL(blob), download: filename }); document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+const fileBase = () => (P.name || 'thesaurus').replace(/[^\wäöüÄÖÜß-]+/g, '_').slice(0, 60);
+
+/* ================= Autospeichern (nur in diesem Browser) ================= */
+let saveT;
+function idb() { return new Promise((res, rej) => { const r = indexedDB.open('skos-werkstatt', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function idbPut(k, v) { try { const db = await idb(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { return false; } }
+async function idbGet(k) { try { const db = await idb(); return await new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); } catch (e) { return null; } }
+function projectJson() {
+  return JSON.stringify({ format: 'skos-werkstatt/1', saved: new Date().toISOString(), project: P,
+    concepts: [...C.values()].map(c => ({ ...c, schemes: [...c.schemes], src: [...c.src] })),
+    sources: [...SRC.values()].map(s => ({ ...s, uris: [...s.uris] })) });
+}
+function loadProjectJson(txt) {
+  const o = JSON.parse(txt); if (o.format !== 'skos-werkstatt/1') throw new Error('Not a SKOS Workshop project file');
+  C.clear(); SRC.clear(); P = Object.assign(freshProject(), o.project);
+  for (const c of o.concepts) { c.schemes = new Set(c.schemes); c.src = new Set(c.src); C.set(c.uri, Object.assign(newConcept(c.uri), c)); }
+  for (const s of o.sources) SRC.set(s.id, { ...s, uris: new Set(s.uris) });
+  UNDO.length = 0; $('#bUndo').disabled = true; OPEN.clear(); SEL = null;
+  return o.saved;
+}
+function autosave() { clearTimeout(saveT); saveT = setTimeout(async () => { const ok = await idbPut('project', projectJson()); $('#saveState').textContent = ok ? 'autosaved ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'not autosaved'; }, 1200); }
+
+/* ================= Darstellung: Status ================= */
+function renderStatus() {
+  const w = [...C.values()].filter(inW);
+  const ext = w.filter(c => extKind(c.uri)).length;
+  const poly = w.filter(c => wParents(c).length > 1).length;
+  $('#projName').textContent = P.scheme;
+  $('#status').replaceChildren(
+    h('span', null, 'Working thesaurus: ', h('b', { text: P.name })),
+    h('span', null, h('b', { text: String(w.length) }), ' concepts (', String(ext), ' from AAT/BBT etc.)'),
+    h('span', null, h('b', { text: String(poly) }), ' with several broader concepts'),
+    h('span', null, 'Library: ', h('b', { text: String([...SRC.keys()].filter(k => !k.startsWith('file:')).length) }), ' sources'),
+    h('span', { id: 'saveState' }, ''));
+}
+
+/* ================= Darstellung: Baum ================= */
+function rowFor(u, parent, depth, pathKey, opts) {
+  const c = C.get(u); const lib = opts && opts.lib;
+  const kids = lib ? (opts.kidsOf(u)) : (IDX.wkids.get(u) || []);
+  const primary = lib ? true : (wParents(c)[0] || '') === (parent || '');
+  const isRef = !lib && !primary && kids.length > 0;
+  const open = (lib ? OPENLIB : OPEN).has(pathKey);
+  const kind = extKind(u);
+  const row = h('div', { class: 'row' + (SEL === u ? ' sel' : '') + (kids.length ? ' grp' : '') + (!primary && !lib ? ' ref' : ''), draggable: 'true',
+    style: `padding-left:${4 + depth * 16}px`, 'data-u': u, 'data-parent': parent || '', 'data-lib': lib ? '1' : '' },
+    h('span', { class: 'tg', text: kids.length ? (open ? '▾' : '▸') : '·' }),
+    h('span', { class: 'lb', text: lab(c) + (!primary && !lib ? '  ↗' : '') }),
+    (() => { const L = dispLang(), fl = pickLang(c, L); return fl != null && fl.split('-')[0] !== L.split('-')[0] ? h('span', { class: 'fl', title: 'No label in "' + L + '" – showing: ' + (fl || 'no language'), text: fl || '–' }) : null; })(),
+    h('span', { class: 'id', text: cid(c) }),
+    kind ? h('span', { class: 'badge', text: kind }) : null,
+    lib && inW(c) ? h('span', { class: 'badge new', text: 'in working th.' }) : null,
+    kids.length ? h('span', { class: 'n', text: String(kids.length) }) : null);
+  row.title = (!primary && !lib ? 'Polyhierarchy – main position under: ' + labU(wParents(c)[0]) + '\n' : '') + c.uri;
+  return { row, kids, open, isRef };
+}
+function renderTreeInto(box, roots, opts) {
+  const frag = document.createDocumentFragment();
+  const walk = (u, parent, depth, pk, seen) => {
+    if (seen.has(u)) return; // Schutz vor Zyklen
+    const r = rowFor(u, parent, depth, pk, opts); frag.append(r.row);
+    if (r.open && !r.isRef) { const s2 = new Set(seen); s2.add(u); for (const k of r.kids) walk(k, u, depth + 1, pk + '>' + k, s2); }
+  };
+  for (const u of roots) walk(u, '', 0, u, new Set());
+  box.append(frag);
+}
+function renderTree() {
+  const box = $('#treeBox'); const st = box.scrollTop; box.replaceChildren();
+  const q = $('#q').value.trim();
+  if (q) { renderResults(box, q); return; }
+  if (!IDX.roots.length) {
+    box.append(h('div', { class: 'empty' }, h('strong', { text: 'No concepts yet' }),
+      h('span', { text: 'Open a SKOS thesaurus (.ttl, .rdf, .nt, .nq, .trig), import an Excel list or create the first concept. You can also simply drop files onto the page.' }),
+      h('div', { class: 'actions' }, h('button', { class: 'btn primary', 'data-act': 'openWorking', text: 'Open thesaurus' }),
+        h('button', { class: 'btn', 'data-act': 'openExcel', text: 'Import Excel' }), h('button', { class: 'btn', 'data-act': 'newTop', text: '+ Concept' }))));
+    return;
+  }
+  const tree = h('div', { class: 'tree' }); renderTreeInto(tree, IDX.roots, null);
+  box.append(h('div', { class: 'topdrop', 'data-top': '1', text: 'Drop here = top level' }), tree);
+  box.scrollTop = st;
+}
+function matches(c, q) {
+  const ql = q.toLowerCase();
+  if (cid(c).toLowerCase().includes(ql) || c.uri.toLowerCase() === ql) return 2;
+  if (Object.values(c.pref).some(v => v.toLowerCase().includes(ql))) return 3;
+  if (c.alt.some(([v]) => v.toLowerCase().includes(ql))) return 1;
+  return 0;
+}
+function renderResults(box, q) {
+  const res = []; for (const c of C.values()) if (inW(c)) { const m = matches(c, q); if (m) res.push([m, c]); }
+  res.sort((a, b) => b[0] - a[0] || lab(a[1]).localeCompare(lab(b[1]), 'de'));
+  const wrap = h('div', { class: 'tree results' });
+  wrap.append(h('div', { class: 'hint', text: res.length + ' hits' + (res.length > 300 ? ' (first 300)' : '') }));
+  for (const [, c] of res.slice(0, 300)) {
+    const row = h('div', { class: 'row' + (SEL === c.uri ? ' sel' : ''), draggable: 'true', 'data-u': c.uri, 'data-parent': wParents(c)[0] || '', style: 'padding-left:8px; display:block' },
+      h('div', { style: 'display:flex; gap:6px; align-items:center' }, h('span', { class: 'lb', text: lab(c) }), h('span', { class: 'id', text: cid(c) }), extKind(c.uri) ? h('span', { class: 'badge', text: extKind(c.uri) }) : null),
+      h('div', { class: 'path', text: pathOf(c.uri).map(labU).join(' › ') || 'oberste Ebene' }));
+    wrap.append(row);
+  }
+  box.append(wrap);
+}
+function reveal(u) {
+  const path = pathOf(u); let pk = '';
+  for (const p of path) { pk = pk ? pk + '>' + p : p; OPEN.add(pk); }
+  renderTree();
+  requestAnimationFrame(() => { const r = [...$('#treeBox').querySelectorAll('.row')].find(r => r.dataset.u === u && !r.classList.contains('ref')); if (r) r.scrollIntoView({ block: 'center' }); });
+}
+
+/* ================= Darstellung: Bibliothek ================= */
+function renderLib() {
+  const box = $('#libBox'); const st = box.scrollTop; box.replaceChildren();
+  const q = $('#qLib').value.trim();
+  if (![...SRC.keys()].some(k => !k.startsWith('file:'))) { box.append(h('div', { class: 'empty' }, h('strong', { text: 'Library empty' }), h('span', { text: 'Load the BBT or another SKOS thesaurus, or take over AAT concepts from the Getty dump.' }))); return; }
+  for (const s of SRC.values()) {
+    if (s.id.startsWith('file:')) continue;   // Dateien des Arbeitsthesaurus nicht als Bibliothek zeigen
+    const kidsOf = u => (IDX.kids.get(u) || []).filter(k => s.uris.has(k)).sort((a, b) => lab(C.get(a)).localeCompare(lab(C.get(b)), 'de'));
+    const roots = [...s.uris].filter(u => C.has(u) && !C.get(u).broader.some(b => s.uris.has(b))).sort((a, b) => lab(C.get(a)).localeCompare(lab(C.get(b)), 'de'));
+    const key = 'src:' + s.id; const open = OPENLIB.has(key) || !!q;
+    const sec = h('div', { class: 'src' });
+    sec.append(h('div', { class: 'srch', 'data-src': s.id }, h('span', { class: 'tg', text: open ? '▾' : '▸' }), h('span', { class: 'nm', text: s.name }),
+      s.kind ? h('span', { class: 'badge', text: s.kind }) : null, h('span', { class: 'mono muted', text: String(s.uris.size) }),
+      h('button', { class: 'btn small', 'data-delsrc': s.id, title: 'Remove source from the library (concepts in the working thesaurus remain)', text: '✕' })));
+    if (open) {
+      const tree = h('div', { class: 'tree' });
+      if (q) {
+        const hits = [...s.uris].map(u => C.get(u)).filter(c => c && matches(c, q)).slice(0, 150);
+        for (const c of hits) tree.append(rowFor(c.uri, '', 0, 'x', { lib: true, kidsOf: () => [] }).row);
+        if (!hits.length) tree.append(h('div', { class: 'hint', text: 'No hits' }));
+      } else renderTreeInto(tree, roots, { lib: true, kidsOf });
+      sec.append(tree);
+    }
+    box.append(sec);
+  }
+  box.scrollTop = st;
+}
+
+/* ================= Darstellung: Karteikarte ================= */
+const LANGIN = (val, on) => h('input', { list: 'langs', value: val, placeholder: 'Language', 'aria-label': 'Language', onchange: on });
+function renderCard() {
+  const box = $('#cardBox'); box.replaceChildren(); $('#cardBadges').replaceChildren();
+  const c = SEL && C.get(SEL);
+  if (!c) { box.append(h('div', { class: 'empty' }, h('strong', { text: 'No concept selected' }), h('span', { text: 'Select a concept on the left to edit labels, definitions and broader concepts.' }))); return; }
+  const kind = extKind(c.uri);
+  if (kind) $('#cardBadges').append(h('span', { class: 'badge', text: kind }));
+  const card = h('div', { class: 'card' });
+  const edit = (label, fn) => { touch(c.uri); fn(); commit(label + ' – ' + lab(c)); };
+  const link = /^https?:/.test(c.uri) && kind ? h('a', { href: kind === 'AAT' ? 'http://vocab.getty.edu/page/aat/' + c.uri.slice(AAT_NS.length) : c.uri, target: '_blank', rel: 'noopener', text: c.uri }) : document.createTextNode(c.uri);
+  card.append(h('div', { class: 'head' }, h('p', { class: 'title', text: lab(c) }), h('div', { class: 'uri' }, link)));
+  if (kind) card.append(h('div', { class: 'warn', text: `Concept from ${kind === 'EXT' ? 'an external thesaurus' : kind} with its original URI. Your own additions are saved as well; the original data stay with the publisher.` }));
+  if (!inW(c)) card.append(h('div', { class: 'actions' },
+    h('button', { class: 'btn primary', onclick: () => adopt(c.uri, null, false), text: 'Take over into the working thesaurus' }),
+    h('button', { class: 'btn', onclick: () => adopt(c.uri, null, true), text: 'Take over with all narrower concepts' })));
+  // Identifikation
+  const idSec = h('div', { class: 'sec' }, h('h3', { text: 'Identifikation' }),
+    h('div', { class: 'field' }, h('label', { for: 'fNot', text: 'Notation / ID' }), h('input', { id: 'fNot', value: c.notation, placeholder: curie(c.uri), onchange: e => edit('Notation', () => c.notation = e.target.value.trim()) })));
+  card.append(idSec);
+  // Labels
+  const prefSec = h('div', { class: 'sec' }, h('h3', null, 'Preferred labels', h('button', { class: 'btn small', text: '+ Language', onclick: () => { const l = ['en', 'de', 'it', 'fr', 'la'].find(l => !c.pref[l]) || 'xx'; edit('Label', () => c.pref[l] = ''); renderCard(); } })));
+  for (const [l, v] of Object.entries(c.pref).sort((a, b) => langSort(a[0], b[0]))) {
+    prefSec.append(h('div', { class: 'lrow' },
+      LANGIN(l, e => { const nl = e.target.value.trim(); if (!nl || nl === l) return; if (c.pref[nl] != null) { toast('There is already a preferred label for ' + nl + ' – only one per language is allowed.'); e.target.value = l; return; } edit('Language', () => { c.pref[nl] = c.pref[l]; delete c.pref[l]; }); renderCard(); }),
+      h('input', { value: v, 'aria-label': 'Label ' + l, onchange: e => { edit('Label', () => c.pref[l] = norm(e.target.value)); refreshViews(); } }),
+      h('button', { class: 'x', title: 'Remove label', text: '✕', onclick: () => { edit('Label removed', () => delete c.pref[l]); renderCard(); } })));
+  }
+  card.append(prefSec);
+  card.append(listSec('Alternative labels and spellings', c, 'alt', false, 'de-x-hist = historical spelling'));
+  card.append(listSec('Definitions', c, 'def', true));
+  card.append(listSec('Scope notes', c, 'scope', true));
+  card.append(listSec('Notes', c, 'note', true));
+  // Oberbegriffe
+  const bSec = h('div', { class: 'sec' }, h('h3', { text: 'Broader concepts' }));
+  const chips = h('div', { class: 'chips' });
+  for (const b of c.broader) {
+    const bc = C.get(b); const k = extKind(b);
+    chips.append(h('span', { class: 'chip' + (k ? ' ext' : '') }, h('span', { text: labU(b) + (inW(bc) ? '' : ' (not in working th.)'), title: b, onclick: () => select(b, true) }),
+      h('button', { class: 'x', title: 'Remove broader concept', text: '✕', onclick: () => { edit('Broader concept removed', () => c.broader = c.broader.filter(x => x !== b)); refreshViews(); } })));
+  }
+  if (!c.broader.length) chips.append(h('span', { class: 'muted', text: 'keiner – oberste Ebene' }));
+  bSec.append(chips, picker('Add broader concept (search) …', u => {
+    if (u === c.uri || isAncestor(c.uri, u)) { toast('That would create a cycle in the hierarchy.'); return; }
+    edit('Broader concept added', () => addU(c.broader, u)); if (!inW(C.get(u))) adoptQuiet(u); refreshViews(); }));
+  card.append(bSec);
+  // Unterbegriffe
+  const kids = (IDX.kids.get(c.uri) || []);
+  const nSec = h('div', { class: 'sec' }, h('h3', null, 'Narrower concepts (' + kids.length + ')', h('button', { class: 'btn small', text: '+ new narrower concept', onclick: () => newConceptDialog(c.uri) })));
+  const kc = h('div', { class: 'chips' });
+  for (const k of kids.slice(0, 120)) kc.append(h('span', { class: 'chip' }, h('span', { text: labU(k), onclick: () => select(k, true) })));
+  if (kids.length > 120) kc.append(h('span', { class: 'muted', text: '… and ' + (kids.length - 120) + ' more' }));
+  nSec.append(kc); card.append(nSec);
+  // Verknüpfungen
+  const mSec = h('div', { class: 'sec' }, h('h3', { text: 'Links to other thesauri' }));
+  for (const m of MATCH) for (const u of c.match[m]) mSec.append(h('div', { class: 'lrow' }, h('span', { class: 'mono muted', text: m }),
+    h('span', { class: 'mono', style: 'word-break:break-all' }, linkTo(u), C.get(u) ? ' – ' : null, C.get(u) ? h('span', { class: 'jump', title: 'Show concept in the workshop', text: labU(u), onclick: () => select(u, true) }) : null),
+    h('button', { class: 'x', text: '✕', title: 'Remove link', onclick: () => { edit('Link removed', () => c.match[m] = c.match[m].filter(x => x !== u)); renderCard(); } })));
+  for (const u of c.related) mSec.append(h('div', { class: 'lrow' }, h('span', { class: 'mono muted', text: 'related' }), h('span', { style: 'word-break:break-all' }, C.get(u) ? h('span', { class: 'jump', title: 'Show concept in the workshop', text: labU(u), onclick: () => select(u, true) }) : null, C.get(u) ? '  ' : null, linkTo(u)),
+    h('button', { class: 'x', text: '✕', onclick: () => { edit('related entfernt', () => c.related = c.related.filter(x => x !== u)); renderCard(); } })));
+  const mt = h('select', { 'aria-label': 'Link type' }, ...[...MATCH, 'related'].map(m => h('option', { value: m, text: m })));
+  const mu = h('input', { placeholder: 'URI or aat:300…', 'aria-label': 'Target URI' });
+  mSec.append(h('div', { class: 'lrow', style: 'grid-template-columns: 120px minmax(0,1fr) auto' }, mt, mu, h('button', { class: 'btn small', text: 'Add', onclick: () => {
+    const u = expand(mu.value) || (C.has(mu.value) ? mu.value : ''); if (!u) { toast('Please enter a full URI or a known prefix (e.g. aat:300011054).'); return; }
+    edit('Link', () => { if (mt.value === 'related') addU(c.related, u); else addU(c.match[mt.value], u); }); renderCard(); } })));
+  card.append(mSec);
+  // Weitere Eigenschaften
+  if (c.extra.length) {
+    const dl = h('dl', { class: 'kv' });
+    for (const x of c.extra.slice(0, 60)) dl.append(h('dt', { text: curieP(x.p) }), h('dd', { text: x.o.v + (x.o.l ? ' @' + x.o.l : '') }));
+    card.append(h('div', { class: 'sec' }, h('h3', { text: 'Further properties (kept unchanged)' }), dl));
+  }
+  // Schemata & Quellen
+  card.append(h('div', { class: 'sec' }, h('h3', { text: 'Schemes and sources' }), h('dl', { class: 'kv' },
+    h('dt', { text: 'inScheme' }), h('dd', { text: [...c.schemes].join(', ') || '–' }),
+    h('dt', { text: 'Source' }), h('dd', { text: [...c.src].map(s => (SRC.get(s) || {}).name || s).join(', ') || 'newly created' }))));
+  // Aktionen
+  const del = h('button', { class: 'btn danger', text: inW(c) ? 'Remove from working thesaurus' : 'Delete concept' });
+  del.addEventListener('click', () => {
+    if (!del.classList.contains('armed')) { del.classList.add('armed'); del.textContent = 'Really? Click again'; setTimeout(() => { del.classList.remove('armed'); del.textContent = inW(c) ? 'Remove from working thesaurus' : 'Delete concept'; }, 3500); return; }
+    removeConcept(c.uri);
+  });
+  card.append(h('div', { class: 'actions' }, h('button', { class: 'btn', text: '+ New concept on the same level', onclick: () => newConceptDialog(wParents(c)[0] || null) }), del));
+  box.append(card);
+}
+function curieP(p) { for (const [k, ns] of Object.entries(NS)) if (p.startsWith(ns)) return k + ':' + p.slice(ns.length); return curie(p); }
+function listSec(title, c, key, area, hint) {
+  const edit = (label, fn) => { touch(c.uri); fn(); commit(label + ' – ' + lab(c)); };
+  const sec = h('div', { class: 'sec' }, h('h3', null, title + (c[key].length ? ' (' + c[key].length + ')' : ''),
+    h('button', { class: 'btn small', text: '+ add', onclick: () => { edit(title, () => c[key].push(['', key === 'alt' ? 'en' : 'en'])); renderCard(); } })));
+  if (hint && c[key].length) sec.append(h('div', { class: 'muted', style: 'font-size:12px', text: hint }));
+  c[key].forEach((it, i) => {
+    const inp = area ? h('textarea', { 'aria-label': title }) : h('input', { 'aria-label': title });
+    inp.value = it[0];
+    inp.addEventListener('change', e => edit(title, () => c[key][i][0] = area ? e.target.value.trim() : norm(e.target.value)));
+    sec.append(h('div', { class: 'lrow' }, LANGIN(it[1], e => edit(title, () => c[key][i][1] = e.target.value.trim())), inp,
+      h('button', { class: 'x', text: '✕', title: 'Entfernen', onclick: () => { edit(title + ' entfernt', () => c[key].splice(i, 1)); renderCard(); } })));
+  });
+  return sec;
+}
+function picker(ph, onPick, filter) {
+  const wrap = h('div', { class: 'picker' }); const inp = h('input', { placeholder: ph, 'aria-label': ph }); const list = h('div', { class: 'list', hidden: true });
+  let items = [], on = -1;
+  const show = () => {
+    const q = inp.value.trim(); list.replaceChildren(); items = [];
+    if (q.length < 2) { list.hidden = true; return; }
+    const ex = expand(q); if (ex && !C.has(ex)) items.push([ex, 'New: ' + ex]);
+    const res = []; for (const c of C.values()) { if (filter && !filter(c)) continue; const m = matches(c, q); if (m) res.push([m + (inW(c) ? 1 : 0), c]); }
+    res.sort((a, b) => b[0] - a[0] || lab(a[1]).localeCompare(lab(b[1]), 'de'));
+    for (const [, c] of res.slice(0, 40)) items.push([c.uri, lab(c) + '  ·  ' + cid(c) + (inW(c) ? '' : '  (library)')]);
+    items.forEach(([u, t], i) => list.append(h('button', { type: 'button', class: i === on ? 'on' : '', text: t, onmousedown: e => { e.preventDefault(); pick(u); } })));
+    list.hidden = !items.length;
+  };
+  const pick = u => { if (!C.has(u)) { const c = getC(u, true); c.src.add('manual'); } inp.value = ''; list.hidden = true; onPick(u); };
+  inp.addEventListener('input', () => { on = -1; show(); });
+  inp.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { on = Math.min(items.length - 1, on + 1); show(); e.preventDefault(); } else if (e.key === 'ArrowUp') { on = Math.max(0, on - 1); show(); e.preventDefault(); } else if (e.key === 'Enter' && items[Math.max(0, on)]) { pick(items[Math.max(0, on)][0]); e.preventDefault(); } else if (e.key === 'Escape') list.hidden = true; });
+  inp.addEventListener('blur', () => setTimeout(() => list.hidden = true, 150));
+  wrap.append(inp, list); return wrap;
+}
+
+/* ================= Bearbeiten ================= */
+function select(u, revealIt) { SEL = u; renderCard(); if (revealIt && inW(C.get(u))) { $('#q').value = ''; reveal(u); } else renderTree(); markLibSel(); if (window.innerWidth <= 900) switchTab('pCard'); }
+function markLibSel() { for (const r of $('#libBox').querySelectorAll('.row')) r.classList.toggle('sel', r.dataset.u === SEL); }
+function changed(full) { buildIndex(); renderStatus(); renderTree(); renderLib(); if (full || SEL) renderCard(); autosave(); }
+function refreshViews() { buildIndex(); fillLangSel(); renderStatus(); renderTree(); renderLib(); renderCard(); autosave(); }
+function adoptQuiet(u, withKids) {
+  const todo = [u]; const seen = new Set();
+  while (todo.length) { const x = todo.pop(); if (seen.has(x)) continue; seen.add(x); const c = C.get(x); if (!c) continue; touch(x); c.schemes.add(P.scheme);
+    if (withKids) for (const k of IDX.kids.get(x) || []) todo.push(k); }
+  return seen.size;
+}
+function adopt(u, target, withKids) {
+  const c = C.get(u); if (!c) return;
+  if (target && (target === u || isAncestor(u, target))) { toast('That would create a cycle in the hierarchy.'); return; }
+  const n = adoptQuiet(u, withKids);
+  if (target) { touch(u); addU(c.broader, target); }
+  commit('Taken over: ' + lab(c)); toast(n > 1 ? n + ' concepts taken over' : '"' + lab(c) + '" taken over'); select(u, true);
+}
+function moveConcept(u, from, target, copy) {
+  const c = C.get(u); if (!c) return;
+  if (target === u || isAncestor(u, target)) { toast('A concept cannot be placed under itself or its narrower concepts.'); return; }
+  touch(u);
+  if (!inW(c)) c.schemes.add(P.scheme);
+  if (target && !inW(C.get(target))) { touch(target); C.get(target).schemes.add(P.scheme); }
+  if (!copy && from) c.broader = c.broader.filter(b => b !== from);
+  if (!copy && !from) c.broader = c.broader.filter(b => !inW(C.get(b)));  // von oberster Ebene/Suche: alle Arbeits-Oberbegriffe ersetzen
+  if (target) addU(c.broader, target);
+  commit((copy ? 'Added under: ' : 'Moved: ') + lab(c) + (target ? ' → ' + labU(target) : ' → top level'));
+  if (target) { const p = pathOf(target); let pk = ''; for (const x of [...p, target]) { pk = pk ? pk + '>' + x : x; OPEN.add(pk); } }
+  SEL = u; refreshViews();
+  toast((copy ? 'Also placed under "' : 'Moved under "') + (target ? labU(target) : 'top level') + '"');
+}
+function makeTop(u, from) {
+  const c = C.get(u); touch(u); if (!inW(c)) c.schemes.add(P.scheme);
+  if (from) c.broader = c.broader.filter(b => b !== from); else c.broader = c.broader.filter(b => !inW(C.get(b)));
+  commit('Top level: ' + lab(c)); SEL = u; refreshViews();
+}
+function removeConcept(u) {
+  const c = C.get(u); if (!c) return; buildIndex();
+  if (inW(c)) {
+    touch(u); c.schemes.delete(P.scheme);
+    for (const k of IDX.kids.get(u) || []) { const kc = C.get(k); if (!inW(kc)) continue; touch(k); kc.broader = kc.broader.filter(b => b !== u); for (const b of c.broader) if (inW(C.get(b))) addU(kc.broader, b); }
+    if (!c.src.size || [...c.src].every(s => s.startsWith('file:') || s === 'manual')) { /* eigener Begriff: ganz löschen */ C.delete(u); }
+    commit('Removed: ' + lab(c)); toast('"' + lab(c) + '" removed; its narrower concepts now hang under its broader concept.');
+  } else { touch(u); C.delete(u); for (const s of SRC.values()) s.uris.delete(u); commit('Deleted: ' + lab(c)); }
+  SEL = null; refreshViews();
+}
+function nextId(prefix) {
+  const x = P.prefixes.find(x => x.p === prefix); if (!x) return '';
+  let max = 0; for (const u of C.keys()) if (u.startsWith(x.ns)) { const r = u.slice(x.ns.length); if (/^\d+$/.test(r)) max = Math.max(max, +r); }
+  return String(max + 1).padStart(x.digits || 6, '0');
+}
+function newConceptDialog(parent) {
+  const own = P.prefixes.filter(x => x.own);
+  if (!own.length) { toast('First create an own prefix under "Prefixes & IDs".'); prefixDialog(); return; }
+  const sel = h('select', { id: 'nPre' }, ...own.map(x => h('option', { value: x.p, text: x.p + '  (' + x.ns + ')', selected: x.p === P.defaultPrefix })));
+  const idIn = h('input', { id: 'nId' }); const lbl = h('input', { id: 'nLab', placeholder: 'Preferred label' }); const lng = h('input', { id: 'nLang', list: 'langs', value: P.uiLang });
+  const uriOut = h('div', { class: 'mono muted' });
+  const upd = () => { const x = P.prefixes.find(x => x.p === sel.value); uriOut.textContent = x ? x.ns + idIn.value : ''; };
+  sel.onchange = () => { idIn.value = nextId(sel.value); upd(); }; idIn.oninput = upd; idIn.value = nextId(sel.value); upd();
+  openDialog('New concept' + (parent ? ' under "' + labU(parent) + '"' : ''), [
+    h('div', { class: 'grid2' }, h('label', null, 'Prefix', sel), h('label', null, 'ID (next free one suggested)', idIn), h('label', null, 'Label', lbl), h('label', null, 'Language', lng)),
+    h('div', null, h('span', { class: 'muted', text: 'URI: ' }), uriOut)],
+    [h('button', { class: 'btn primary', text: 'Anlegen', onclick: () => {
+      const x = P.prefixes.find(x => x.p === sel.value); const uri = x.ns + idIn.value.trim();
+      if (!idIn.value.trim()) { toast('Please enter an ID.'); return; }
+      if (C.has(uri)) { toast('This ID is already taken: ' + sel.value + ':' + idIn.value); return; }
+      touch(uri); const c = getC(uri, true); c.schemes.add(P.scheme); c.src.add('manual'); c.notation = x.p + ':' + idIn.value.trim();
+      if (lbl.value.trim()) c.pref[lng.value.trim() || 'de'] = norm(lbl.value); if (parent) c.broader.push(parent);
+      P.defaultPrefix = x.p; commit('New: ' + lab(c)); closeDialog(); select(uri, true);
+    } })]);
+  setTimeout(() => lbl.focus(), 50);
+}
+
+/* ================= Ziehen und Ablegen ================= */
+let DRAG = null;
+document.addEventListener('dragstart', e => {
+  const r = e.target.closest && e.target.closest('.row'); if (!r) return;
+  DRAG = { u: r.dataset.u, from: r.dataset.parent || '', lib: r.dataset.lib === '1' };
+  e.dataTransfer.effectAllowed = 'copyMove'; e.dataTransfer.setData('text/plain', DRAG.u);
+});
+document.addEventListener('dragend', () => { DRAG = null; for (const x of document.querySelectorAll('.drop')) x.classList.remove('drop'); });
+const treeBox = $('#treeBox');
+treeBox.addEventListener('dragover', e => {
+  if (!DRAG) return; const r = e.target.closest('.row, .topdrop'); if (!r) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = (e.ctrlKey || e.altKey || e.metaKey || DRAG.lib) ? 'copy' : 'move';
+  for (const x of treeBox.querySelectorAll('.drop')) if (x !== r) x.classList.remove('drop'); r.classList.add('drop');
+});
+treeBox.addEventListener('dragleave', e => { const r = e.target.closest('.row, .topdrop'); if (r && !r.contains(e.relatedTarget)) r.classList.remove('drop'); });
+treeBox.addEventListener('drop', e => {
+  if (!DRAG) return; const r = e.target.closest('.row, .topdrop'); if (!r) return; e.preventDefault(); r.classList.remove('drop');
+  const d = DRAG; DRAG = null; const copy = e.ctrlKey || e.altKey || e.metaKey;
+  if (r.dataset.top) { if (d.lib && !inW(C.get(d.u))) { dropMenu(e, d, null); return; } makeTop(d.u, copy ? null : d.from); return; }
+  const target = r.dataset.u; if (target === d.u) return;
+  if (d.lib && !inW(C.get(d.u))) { dropMenu(e, d, target); return; }
+  moveConcept(d.u, d.from, target, copy);
+});
+function dropMenu(e, d, target) {
+  const m = h('div', { class: 'dropmenu', style: `left:${Math.min(e.clientX, innerWidth - 250)}px; top:${Math.min(e.clientY, innerHeight - 140)}px` },
+    h('div', { class: 't', text: '"' + labU(d.u) + '" ' + (target ? 'under "' + labU(target) + '"' : 'on top level') }),
+    h('button', { text: 'Take over (this concept only)', onclick: () => { m.remove(); adopt(d.u, target, false); } }),
+    h('button', { text: 'Take over with all narrower concepts', onclick: () => { m.remove(); adopt(d.u, target, true); } }),
+    h('button', { text: 'Cancel', onclick: () => m.remove() }));
+  document.body.append(m); setTimeout(() => document.addEventListener('click', function off(ev) { if (!m.contains(ev.target)) { m.remove(); document.removeEventListener('click', off); } }), 0);
+}
+function onTreeClick(e, lib) {
+  const r = e.target.closest('.row'); if (!r) return;
+  const box = lib ? $('#libBox') : $('#treeBox');
+  if (e.target.classList.contains('tg')) {
+    const set = lib ? OPENLIB : OPEN;
+    // Pfadschlüssel aus den Vorgängerzeilen rekonstruieren
+    const rows = [...box.querySelectorAll('.row')]; const i = rows.indexOf(r); const depth = parseFloat(r.style.paddingLeft);
+    const chain = [r.dataset.u]; let d = depth;
+    for (let j = i - 1; j >= 0 && d > 4; j--) { const pd = parseFloat(rows[j].style.paddingLeft); if (pd < d && rows[j].closest('.tree') === r.closest('.tree')) { chain.unshift(rows[j].dataset.u); d = pd; } }
+    const pk = chain.join('>'); set.has(pk) ? set.delete(pk) : set.add(pk); lib ? renderLib() : renderTree(); return;
+  }
+  select(r.dataset.u, false);
+}
+$('#treeBox').addEventListener('click', e => onTreeClick(e, false));
+$('#libBox').addEventListener('click', e => {
+  const del = e.target.closest('[data-delsrc]');
+  if (del) { const s = SRC.get(del.dataset.delsrc); for (const u of s.uris) { const c = C.get(u); if (c) { c.src.delete(s.id); if (!inW(c) && !c.src.size) C.delete(u); } } SRC.delete(s.id); toast('Source removed: ' + s.name); refreshViews(); return; }
+  const sh = e.target.closest('.srch'); if (sh) { const k = 'src:' + sh.dataset.src; OPENLIB.has(k) ? OPENLIB.delete(k) : OPENLIB.add(k); renderLib(); return; }
+  onTreeClick(e, true);
+});
+
+/* ================= Dialoge ================= */
+function openDialog(title, body, foot) {
+  $('#dlgTitle').textContent = title; $('#dlgBody').replaceChildren(...body); $('#dlgFoot').replaceChildren(...(foot || []));
+  const d = $('#dlg'); if (!d.open) d.showModal();
+}
+function closeDialog() { const d = $('#dlg'); if (d.open) d.close(); }
+$('#dlg').addEventListener('click', e => { if (e.target.closest('[data-close]')) closeDialog(); });
+function pickFile(accept, multiple) {
+  return new Promise(res => { const f = $('#fileIn'); f.accept = accept; f.multiple = !!multiple; f.value = ''; f.onchange = () => res([...f.files]); f.click(); });
+}
+const readText = f => f.text();
+
+/* ---------- Mehrere Graphen (N-Quads, TriG) ---------- */
+function graphDialog(quads, fname, preferWorking) {
+  const by = new Map(); for (const q of quads) { if (!by.has(q.g)) by.set(q.g, []); by.get(q.g).push(q); }
+  const info = [...by.entries()].map(([g, ts]) => {
+    const concepts = new Set(ts.filter(t => t.p === NS.rdf + 'type' && t.o.v === SK('Concept')).map(t => t.s.v));
+    const inOwn = ts.filter(t => t.p === SK('inScheme') && t.o.v === g).length;
+    const lbl = ts.find(t => t.s.v === g && [SK('prefLabel'), NS.dct + 'title', NS.rdfs + 'label', NS.dc + 'title'].includes(t.p) && t.o.t === 'l' && (!t.o.l || t.o.l === 'de' || t.o.l === 'en'));
+    return { g, ts, n: ts.length, concepts: concepts.size, inOwn, label: lbl ? lbl.o.v : '' };
+  }).sort((a, b) => b.inOwn - a.inOwn || b.n - a.n);
+  const choice = new Map(info.map((x, i) => [x.g, preferWorking && i === 0 ? 'work' : 'lib']));
+  const tb = h('tbody', null, ...info.map(x => h('tr', null,
+    h('td', { class: 'mono', style: 'word-break:break-all', text: x.g || '(Standardgraph)' }), h('td', { text: x.label }),
+    h('td', { class: 'mono', text: String(x.n) }), h('td', { class: 'mono', text: String(x.concepts) }),
+    h('td', null, h('select', { 'aria-label': 'Use as', onchange: e => choice.set(x.g, e.target.value) },
+      ...[['work', 'Working thesaurus'], ['lib', 'Library'], ['skip', 'do not load']].map(([v, t]) => h('option', { value: v, text: t, selected: choice.get(x.g) === v })))))));
+  openDialog('Graphs in "' + fname + '"', [
+    h('p', { text: 'The file contains ' + info.length + ' graphs. Choose for each whether it belongs to the working thesaurus or goes into the library as a source. Several graphs can together form the working thesaurus.' }),
+    h('div', { class: 'tbl' }, h('table', null, h('thead', null, h('tr', null, h('th', { text: 'Graph' }), h('th', { text: 'Name' }), h('th', { text: 'Triples' }), h('th', { text: 'Concepts' }), h('th', { text: 'Use as' }))), tb)),
+    h('p', { class: 'muted', text: 'Concepts described in several graphs (e.g. AAT concepts with own additions and Getty original data) are merged.' })],
+    [h('button', { class: 'btn primary', text: 'Load', onclick: () => {
+      const work = info.filter(x => choice.get(x.g) === 'work'); const lib = info.filter(x => choice.get(x.g) === 'lib');
+      let n = 0;
+      if (work.length) {
+        const first = work[0]; const r = loadAsWorking(first.ts, fname + (first.g ? ' ‹' + first.g + '›' : '')); n += r.conceptUris.length;
+        if (first.g && r.conceptUris.some(u => C.get(u).schemes.has(first.g))) { /* Schema = Graph-URI, passt */ }
+        for (const x of work.slice(1)) { const r2 = ingest(x.ts, { id: 'file:' + fname + ' ‹' + x.g + '›', name: x.label || x.g, kind: '' }); for (const u of r2.conceptUris) C.get(u).schemes.add(P.scheme); n += r2.conceptUris.length; }
+      }
+      for (const x of lib) { const nm = x.label || x.g || fname; const r = loadIntoLibrary(x.ts, nm + (x.g && x.label ? ' ‹' + x.g + '›' : ''), x.g || ''); OPENLIB.add('src:lib:' + nm); n += r.conceptUris.length; }
+      closeDialog(); SEL = null; refreshViews(); toast(n + ' concept descriptions loaded from ' + (work.length + lib.length) + ' graphs', 5000);
+    } })]);
+}
+
+/* ---------- SKOS laden ---------- */
+async function openSkos(asWorking) {
+  const files = await pickFile('.ttl,.rdf,.xml,.owl,.nt,.n3,.nq,.trig', true); if (!files.length) return;
+  for (const [i, f] of files.entries()) {
+    try {
+      const tr = parseRdf(await readText(f), f.name);
+      if (isQuadFile(f.name)) { graphDialog(tr, f.name, asWorking && i === 0); return; }
+      if (asWorking && i === 0) { const keep = C.size && false; const r = loadAsWorking(tr, f.name, keep); toast(`${f.name}: ${r.conceptUris.length} concepts opened`); }
+      else { const r = loadIntoLibrary(tr, f.name); toast(`${f.name}: ${r.conceptUris.length} concepts loaded into the library`); OPENLIB.add('src:lib:' + f.name); }
+    } catch (err) { toast('Error reading ' + f.name + ': ' + err.message, 6000); }
+  }
+  SEL = null; refreshViews();
+}
+
+/* ---------- Präfixe ---------- */
+function prefixDialog() {
+  const rows = P.prefixes.map(x => ({ ...x }));
+  const tb = h('tbody');
+  const draw = () => { tb.replaceChildren(...rows.map((x, i) => h('tr', null,
+    h('td', null, h('input', { value: x.p, oninput: e => x.p = e.target.value.trim() })),
+    h('td', null, h('input', { value: x.ns, oninput: e => x.ns = e.target.value.trim() })),
+    h('td', null, h('input', { type: 'number', min: 1, max: 12, value: x.digits, style: 'width:60px', oninput: e => x.digits = +e.target.value })),
+    h('td', null, h('input', { type: 'checkbox', checked: x.own, onchange: e => x.own = e.target.checked, 'aria-label': 'own prefix' })),
+    h('td', { class: 'mono' }, x.own ? x.p + ':' + nextIdFor(x) : ''),
+    h('td', null, h('button', { class: 'btn small', text: '✕', onclick: () => { rows.splice(i, 1); draw(); } }))))); };
+  const nextIdFor = x => { let max = 0; for (const u of C.keys()) if (x.ns && u.startsWith(x.ns)) { const r = u.slice(x.ns.length); if (/^\d+$/.test(r)) max = Math.max(max, +r); } return String(max + 1).padStart(x.digits || 6, '0'); };
+  draw();
+  const sch = h('input', { value: P.scheme }); const nm = h('input', { value: P.name });
+  openDialog('Prefixes and IDs', [
+    h('p', { class: 'muted', text: 'Own prefixes generate new IDs (next free number). External prefixes such as aat or bbt only serve to abbreviate URIs and to read IDs like "aat:300011054".' }),
+    h('div', { class: 'grid2' }, h('label', null, 'Name of the thesaurus', nm), h('label', null, 'URI of the working scheme (skos:ConceptScheme)', sch)),
+    h('div', { class: 'tbl' }, h('table', null, h('thead', null, h('tr', null, h('th', { text: 'Prefix' }), h('th', { text: 'Namespace (URI start)' }), h('th', { text: 'Digits' }), h('th', { text: 'own' }), h('th', { text: 'next ID' }), h('th'))), tb)),
+    h('button', { class: 'btn small', text: '+ Prefix', onclick: () => { rows.push({ p: 'new', ns: (P.scheme.replace(/[^/#]*$/, '')) + 'new:', digits: 6, own: true }); draw(); } })],
+    [h('button', { class: 'btn primary', text: 'Apply', onclick: () => {
+      if (rows.some(x => !x.p || !x.ns)) { toast('Every prefix needs an abbreviation and a namespace.'); return; }
+      const oldS = P.scheme, newS = sch.value.trim();
+      if (newS && newS !== oldS) for (const c of C.values()) if (c.schemes.has(oldS)) { c.schemes.delete(oldS); c.schemes.add(newS); }
+      P.scheme = newS || oldS; P.name = nm.value.trim() || P.name; P.schemeLabel[P.uiLang] = P.name; P.prefixes = rows; closeDialog(); refreshViews(); toast('Prefixes saved');
+    } })]);
+}
+
+/* ---------- Excel ---------- */
+const FIELDS = [['', '– ignore –'], ['id', 'ID / notation'], ['uri', 'URI'], ['pref', 'Preferred label'], ['alt', 'Alternative labels'], ['def', 'Definition'], ['scope', 'Scope note'],
+  ['note', 'Note'], ['pid', 'Broader concept: ID'], ['plabel', 'Broader concept: label'], ['exactMatch', 'exactMatch (URI/ID)'], ['closeMatch', 'closeMatch (URI/ID)']];
+function guessField(hd) {
+  const x = hd.toLowerCase();
+  if (/(_prefix|_number)$/.test(x) || /^thesaurus_(parent|child)$/.test(x)) return ['', ''];
+  const lang = (x.match(/[_@ ](de|en|it|fr|la|el)$/) || [])[1] || '';
+  if (/parent.*_id$|oberbegriff.*id|broader.*id|parent_id/.test(x)) return ['pid', ''];
+  if (/parent|oberbegriff|broader/.test(x)) return ['plabel', lang || 'en'];
+  if (/(^|_)uri$/.test(x)) return ['uri', ''];
+  if (/child_term_id$|^id$|notation|identifier|_id$/.test(x)) return ['id', ''];
+  if (/alt|schreibung|synonym|variante/.test(x)) return ['alt', lang || 'de-x-hist'];
+  if (/definition/.test(x)) return ['def', lang || 'en'];
+  if (/scope|anwendung/.test(x)) return ['scope', lang || 'en'];
+  if (/same_as|exact/.test(x)) return ['exactMatch', ''];
+  if (/child_term$|label|begriff|concept|term$|name|preflabel/.test(x)) return ['pref', lang || 'en'];
+  return ['', ''];
+}
+async function excelDialog() {
+  const [f] = await pickFile('.xlsx,.xls,.csv,.ods'); if (!f) return;
+  let wb; try { wb = XLSX.read(await f.arrayBuffer(), { type: 'array' }); } catch (e) { toast('Excel file cannot be read: ' + e.message); return; }
+  const sheetSel = h('select', { id: 'xSheet' }, ...wb.SheetNames.map(n => h('option', { value: n, text: n })));
+  const mapBox = h('div'); const prevBox = h('div');
+  const own = P.prefixes.filter(x => x.own);
+  const preSel = h('select', { id: 'xPre' }, h('option', { value: '', text: '– keines –' }), ...own.map(x => h('option', { value: x.p, text: x.p, selected: x.p === P.defaultPrefix })));
+  const mergeLab = h('input', { type: 'checkbox', id: 'xMerge', checked: true });
+  const adoptExt = h('input', { type: 'checkbox', id: 'xExt', checked: true });
+  const sepIn = h('input', { id: 'xSep', value: '|', style: 'width:60px' });
+  let rows = [], map = [];
+  const draw = () => {
+    rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetSel.value], { header: 1, defval: '', raw: false });
+    const hd = (rows[0] || []).map(String); map = hd.map(guessField);
+    const tb = h('tbody', null, ...hd.map((x, i) => h('tr', null, h('td', { class: 'mono', text: x }),
+      h('td', null, h('select', { onchange: e => map[i][0] = e.target.value }, ...FIELDS.map(([k, t]) => h('option', { value: k, text: t, selected: map[i][0] === k })))),
+      h('td', null, h('input', { list: 'langs', value: map[i][1], style: 'width:90px', oninput: e => map[i][1] = e.target.value.trim() })),
+      h('td', { class: 'muted', text: String((rows[1] || [])[i] ?? '').slice(0, 40) }))));
+    mapBox.replaceChildren(h('div', { class: 'tbl', style: 'max-height:300px' }, h('table', null, h('thead', null, h('tr', null, h('th', { text: 'Column' }), h('th', { text: 'means' }), h('th', { text: 'Language' }), h('th', { text: 'Example (row 2)' }))), tb)));
+    prevBox.textContent = (rows.length - 1) + ' Datenzeilen';
+  };
+  sheetSel.onchange = draw; draw();
+  openDialog('Import concepts from Excel – ' + f.name, [
+    h('div', { class: 'grid2' }, h('label', null, 'Sheet', sheetSel), h('label', null, 'Prefix for IDs without prefix / new concepts', preSel), h('label', null, 'Separator for several values in one cell', sepIn)),
+    h('label', { class: 'check' }, mergeLab, 'Assign rows without ID to an existing concept with the same label'),
+    h('label', { class: 'check' }, adoptExt, 'Add external broader concepts (aat:, bbt: …) to the working thesaurus'),
+    h('p', { class: 'muted', text: 'Each row describes one concept. If a row names a broader concept, it is assigned (if it does not exist, it is created from the broader-concept label). Existing concepts are supplemented, not overwritten. Several rows with the same concept and different broader concepts produce a polyhierarchy.' }),
+    mapBox, prevBox],
+    [h('button', { class: 'btn primary', text: 'Einlesen', onclick: () => {
+      const stats = importExcelRows(rows, map, { prefix: preSel.value, merge: mergeLab.checked, adoptExt: adoptExt.checked, sep: sepIn.value || '|', name: f.name });
+      closeDialog(); refreshViews();
+      toast(`${f.name}: ${stats.created} new, ${stats.updated} updated, ${stats.links} broader concepts assigned`, 5000);
+    } })]);
+}
+function importExcelRows(rows, map, o) {
+  const byLabel = new Map(); for (const c of C.values()) if (inW(c)) for (const v of Object.values(c.pref)) byLabel.set(v.toLowerCase(), c.uri);
+  const stats = { created: 0, updated: 0, links: 0 }; const srcId = 'file:' + o.name;
+  const x = P.prefixes.find(p => p.p === o.prefix);
+  const resolve = (id, label, createIfMissing) => {
+    id = String(id ?? '').trim(); label = norm(label);
+    let u = '';
+    if (id) { u = expand(id); if (!u && /^\d+$/.test(id) && x) u = x.ns + id.padStart(x.digits, '0'); if (!u && x && /^[\w.-]+$/.test(id)) u = x.ns + id; if (!u) u = /^https?:/.test(id) ? id : ''; }
+    if (!u && label && o.merge) u = byLabel.get(label.toLowerCase()) || '';
+    if (!u && label && createIfMissing && x) u = x.ns + nextId(x.p);
+    return u;
+  };
+  for (const r of rows.slice(1)) {
+    const get = k => map.map((m, i) => m[0] === k ? [r[i], m[1]] : null).filter(Boolean);
+    const id = (get('id')[0] || [''])[0]; const uriCol = (get('uri')[0] || [''])[0];
+    const prefs = get('pref').filter(([v]) => norm(v));
+    if (!String(id).trim() && !String(uriCol).trim() && !prefs.length) continue;
+    const u = String(uriCol).trim() || resolve(id, prefs[0] && prefs[0][0], true);
+    if (!u) continue;
+    const isNew = !C.has(u); touch(u); const c = getC(u, true); c.src.add(srcId);
+    if (!inW(c)) c.schemes.add(P.scheme);
+    if (!c.notation && String(id).trim() && !/^https?:/.test(id)) c.notation = String(id).trim().includes(':') ? String(id).trim() : (x ? x.p + ':' + u.slice(x.ns.length) : String(id).trim());
+    if (!c.notation && isNew && x && u.startsWith(x.ns)) c.notation = x.p + ':' + u.slice(x.ns.length);
+    for (const [v, l] of prefs) { const L = l || 'de'; if (!c.pref[L]) c.pref[L] = norm(v); else if (c.pref[L] !== norm(v)) addAlt(c, v, L); byLabel.set(norm(v).toLowerCase(), u); }
+    for (const [v, l] of get('alt')) for (const a of String(v).split(o.sep)) addAlt(c, a, l);
+    for (const k of ['def', 'scope', 'note']) for (const [v, l] of get(k)) addList(c[k], v, l || 'de');
+    for (const k of ['exactMatch', 'closeMatch']) for (const [v] of get(k)) for (const a of String(v).split(o.sep)) { const t = expand(a) || (/^https?:/.test(a.trim()) ? a.trim() : ''); if (t) addU(c.match[k], t); }
+    const pids = get('pid'); const plabs = get('plabel');
+    const pidVals = pids.flatMap(([v]) => String(v).split(o.sep).map(s => s.trim()).filter(Boolean));
+    const plabVal = plabs.length ? norm(plabs[0][0]) : '';
+    const parents = pidVals.length ? pidVals.map(p => [p, pidVals.length === 1 ? plabVal : '']) : (plabVal ? [['', plabVal]] : []);
+    for (const [pid, pl] of parents) {
+      const pu = resolve(pid, pl, true); if (!pu || pu === u) continue;
+      const pIsNew = !C.has(pu); touch(pu); const pc = getC(pu, true);
+      if (pIsNew) { pc.src.add(srcId); if (pl) pc.pref[(plabs[0] && plabs[0][1]) || 'de'] = pl; if (x && pu.startsWith(x.ns)) pc.notation = x.p + ':' + pu.slice(x.ns.length); if (pl) byLabel.set(pl.toLowerCase(), pu); }
+      else if (pl && !Object.keys(pc.pref).length) pc.pref[(plabs[0] && plabs[0][1]) || 'de'] = pl;
+      if (!inW(pc) && (o.adoptExt || !extKind(pu))) pc.schemes.add(P.scheme);
+      if (isAncestor(u, pu)) continue;
+      if (!c.broader.includes(pu)) { c.broader.push(pu); stats.links++; }
+    }
+    isNew ? stats.created++ : stats.updated++;
+  }
+  commit('Excel imported: ' + o.name);
+  return stats;
+}
+
+/* ---------- Mindmap ---------- */
+async function mindmapDialog() {
+  const [f] = await pickFile('.mmap,.mm,.opml,.xml'); if (!f) return;
+  let roots;
+  try { roots = await parseMindmap(f); } catch (e) { toast('Mind map cannot be read: ' + e.message, 6000); return; }
+  let n = 0; const unknown = new Map();
+  const idsOf = x => [...(x.note.match(/ID:\s*\S+/g) || []).map(s => s.replace(/^ID:\s*/, '')), ...String(x.title || '').split('|').map(s => s.trim())].filter(v => /^[A-Za-z][\w.-]*:\S+$/.test(v));
+  const count = ns => ns.forEach(x => { n++; for (const id of idsOf(x)) { const [pre, loc] = [id.slice(0, id.indexOf(':')), id.slice(id.indexOf(':') + 1)]; if (!P.prefixes.some(p => p.p === pre) && !unknown.has(pre)) unknown.set(pre, /^\d+$/.test(loc) ? loc.length : 6); } count(x.kids); }); count(roots);
+  const tmpl = (P.prefixes.find(x => x.own && /:$/.test(x.ns)) || {}).ns;
+  const nsIns = [...unknown].map(([pre, dig]) => { const inp = h('input', { value: tmpl ? tmpl.replace(/[^/#]*:$/, pre + ':') : '', placeholder: 'http://…/' + pre + ':', 'data-pre': pre, 'data-dig': dig }); return h('label', null, 'Namespace for "' + pre + ':"', inp); });
+  const repl = h('input', { type: 'checkbox', id: 'mmRepl', checked: true });
+  const skipRoot = h('input', { type: 'checkbox', id: 'mmRoot', checked: roots.length === 1 });
+  const createNew = h('input', { type: 'checkbox', id: 'mmNew', checked: true });
+  openDialog('Import hierarchy from mind map – ' + f.name, [
+    h('p', { text: `${n} topics found. Topics are matched to concepts via "ID:" or "URI:" in the notes (as exported by this workshop) or via a unique label.` }),
+    h('label', { class: 'check' }, skipRoot, 'Central topic is only the title (not a concept)'),
+    h('label', { class: 'check' }, repl, 'Replace the broader concepts of the contained concepts with the mind map (otherwise only add)'),
+    h('label', { class: 'check' }, createNew, 'Create unknown topics as new concepts (with default prefix ' + (P.defaultPrefix || '–') + ')'),
+    h('p', { class: 'muted', text: 'Grey references "↗" from the exported mind map count as an additional broader concept.' }),
+    nsIns.length ? h('div', null, h('p', { text: 'The mind map uses identifiers with an unknown prefix. Enter the namespace (URI = namespace + identifier). Prefixes left empty are skipped for further identifiers (closeMatch).' }), h('div', { class: 'grid2' }, nsIns)) : null],
+    [h('button', { class: 'btn primary', text: 'Einlesen', onclick: () => {
+      for (const l of nsIns) { const inp = l.querySelector('input'); const v = inp.value.trim(); if (!v) continue; P.prefixes.push({ p: inp.dataset.pre, ns: v, digits: +inp.dataset.dig || 6, own: true }); if (!P.defaultPrefix) P.defaultPrefix = inp.dataset.pre; }
+      const s = importMindmap(skipRoot.checked && roots.length === 1 ? roots[0].kids : roots, { replace: repl.checked, create: createNew.checked, name: f.name }); closeDialog(); refreshViews(); toast(`${s.matched} matched, ${s.created} new, ${s.links} broader concepts set, ${s.skipped} skipped` + (s.unres ? `, ${s.unres} identifiers without namespace not linked` : ''), 6000); } })]);
+}
+async function parseMindmap(f) {
+  const name = f.name.toLowerCase();
+  if (name.endsWith('.mmap')) {
+    const z = await JSZip.loadAsync(await f.arrayBuffer()); const doc = new DOMParser().parseFromString(await z.file('Document.xml').async('string'), 'application/xml');
+    const AP = 'http://schemas.mindjet.com/MindManager/Application/2003';
+    const topic = t => { const kids = []; let text = '', note = '', url = '', title = '';
+      for (const ch of t.children) {
+        if (ch.localName === 'Text' && ch.namespaceURI === AP) text = ch.getAttribute('PlainText') || '';
+        if (ch.localName === 'Hyperlink' && ch.namespaceURI === AP) { url = ch.getAttribute('Url') || ''; title = ch.getAttribute('Title') || ''; }
+        if (ch.localName === 'NotesGroup') note = [...ch.getElementsByTagName('*')].filter(e => e.localName === 'p' || e.localName === 'P').map(e => e.textContent).join('\n') || ch.textContent;
+        if (ch.localName === 'SubTopics') for (const s of ch.children) if (s.localName === 'Topic') kids.push(topic(s));
+      } return { text, note, url, title, kids }; };
+    const one = [...doc.getElementsByTagNameNS(AP, 'OneTopic')][0]; return [...one.children].filter(e => e.localName === 'Topic').map(topic);
+  }
+  const doc = new DOMParser().parseFromString(await f.text(), 'application/xml');
+  if (doc.querySelector('parsererror')) throw new Error('XML cannot be read');
+  if (doc.documentElement.localName === 'opml') {
+    const o = e => ({ text: e.getAttribute('text') || '', note: e.getAttribute('_note') || '', url: e.getAttribute('url') || '', title: '', kids: [...e.children].filter(x => x.localName === 'outline').map(o) });
+    return [...doc.querySelector('body').children].filter(x => x.localName === 'outline').map(o);
+  }
+  const n = e => ({ text: e.getAttribute('TEXT') || '', url: e.getAttribute('LINK') || '', title: '', note: [...e.children].filter(x => x.localName === 'richcontent').map(x => [...x.querySelectorAll('p')].map(p => p.textContent).join('\n') || x.textContent).join('\n'),
+    kids: [...e.children].filter(x => x.localName === 'node').map(n) });
+  return [...doc.documentElement.children].filter(x => x.localName === 'node').map(n);
+}
+function importMindmap(roots, o) {
+  const byLabel = new Map(); const dup = new Set();
+  for (const c of C.values()) if (inW(c)) { const l = lab(c).toLowerCase(); if (byLabel.has(l) && byLabel.get(l) !== c.uri) dup.add(l); byLabel.set(l, c.uri); }
+  const s = { matched: 0, created: 0, links: 0, skipped: 0 };
+  const x = P.prefixes.find(p => p.p === P.defaultPrefix);
+  const newParents = new Map(); // uri -> [parents in order]
+  const mk = (u, t, nid) => { touch(u); const c = getC(u, true); if (t) c.pref[P.uiLang] = t; c.notation = nid || curie(u); c.schemes.add(P.scheme); c.src.add('file:' + o.name); byLabel.set(t.toLowerCase(), u); s.created++; return u; };
+  const resolve = node => {
+    const t = node.text.replace(/\s*↗\s*$/, '').trim(); const l = t.toLowerCase();
+    const tIds = String(node.title || '').split('|').map(x => x.trim()).filter(x => /^[A-Za-z][\w.-]*:\S+$/.test(x));
+    let mU = node.note.match(/URI:\s*(\S+)/); let mI = node.note.match(/ID:\s*(\S+)/);
+    if (!mU && /^https?:\/\//.test(node.url || '')) mU = [null, node.url];
+    if (!mI && tIds[0]) mI = [null, tIds[0]];
+    if (mU && C.has(mU[1])) return mU[1];
+    if (mI) { const u = expand(mI[1]); if (u && C.has(u)) return u; if (u && o.create) return mk(u, t, mI[1]); }
+    if (mU && /^https?:/.test(mU[1]) && o.create) return mk(mU[1], t, mI && mI[1]);
+    if (byLabel.has(l) && !dup.has(l)) return byLabel.get(l);
+    if (o.create && x && t) { const u = x.ns + nextId(x.p); touch(u); const c = getC(u, true); c.pref[P.uiLang] = t; c.notation = x.p + ':' + u.slice(x.ns.length); c.schemes.add(P.scheme); c.src.add('file:' + o.name); byLabel.set(l, u); s.created++; return u; }
+    return '';
+  };
+  const walk = (node, parent) => {
+    const u = resolve(node);
+    if (!u) { const empty = !node.text.trim(); if (!empty) s.skipped++; for (const k of node.kids) walk(k, empty ? parent : ''); return; }  // leere Themen werden übersprungen, ihre Unterthemen hängen am nächsten Begriff darüber
+    s.matched++;
+    const more = String(node.title || '').split('|').map(x => x.trim()).filter(x => /^[A-Za-z][\w.-]*:\S+$/.test(x)).slice(1);
+    if (more.length) { touch(u); const c = C.get(u); for (const id of more) { const mu = expand(id); if (mu) { if (mu !== u && !c.match.exactMatch.includes(mu)) addU(c.match.closeMatch, mu); } else s.unres = (s.unres || 0) + 1; } }
+    if (!newParents.has(u)) newParents.set(u, []);
+    if (parent && !newParents.get(u).includes(parent)) newParents.get(u).push(parent);
+    if (!/↗\s*$/.test(node.text)) for (const k of node.kids) walk(k, u);
+  };
+  for (const r of roots) walk(r, '');
+  for (const [u, ps] of newParents) {
+    const c = C.get(u); touch(u); c.schemes.add(P.scheme);
+    if (o.replace) c.broader = c.broader.filter(b => !inW(C.get(b)) && !newParents.has(b));
+    for (const p of ps) { if (p === u || isAncestor(u, p)) continue; if (!c.broader.includes(p)) { c.broader.push(p); s.links++; } }
+  }
+  commit('Mind map imported: ' + o.name);
+  return s;
+}
+function mindmapTree() {
+  buildIndex();
+  const build = (u, parent, depth, seen) => {
+    const c = C.get(u); const primary = (wParents(c)[0] || '') === (parent || '');
+    const node = { u, text: lab(c) + (primary ? '' : '  ↗'), ref: !primary, depth, kids: [] };
+    if (primary && !seen.has(u)) { const s2 = new Set(seen); s2.add(u); node.kids = (IDX.wkids.get(u) || []).map(k => build(k, u, depth + 1, s2)); }
+    return node;
+  };
+  return { u: null, text: P.name, ref: false, depth: 0, kids: IDX.roots.map(u => build(u, null, 1, new Set())) };
+}
+function noteLines(u) {
+  const c = C.get(u); const L = ['ID: ' + cid(c), 'URI: ' + u];
+  const d = c.def.find(([, l]) => l === dispLang()) || c.def[0] || c.scope[0]; if (d) L.push('Definition: ' + d[0]);
+  const ps = wParents(c); if (ps.length > 1) L.push('Broader concepts: ' + ps.map(labU).join(' | '));
+  const hist = c.alt.filter(([, l]) => l === 'de-x-hist').map(([v]) => v); if (hist.length) L.push('Spellings (' + hist.length + '): ' + hist.slice(0, 25).join(', ') + (hist.length > 25 ? ' …' : ''));
+  for (const [v] of c.note) L.push(v);
+  return L;
+}
+const xmlEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function linkTitle(u) { const c = C.get(u); return [cid(c), ...c.match.exactMatch.map(curie), ...c.match.closeMatch.map(curie)].join('|'); }
+function makeMmap(root) {
+  const oid = () => { const b = new Uint8Array(16); crypto.getRandomValues(b); return btoa(String.fromCharCode(...b)); };
+  const t = n => {
+    let x = `<ap:Topic OId="${oid()}" Gen="0000000000000000" Dirty="0000000000000001">`;
+    if (n.kids.length) { x += '<ap:SubTopics>' + n.kids.map(t).join('') + '</ap:SubTopics>'; if (n.depth >= 2) x += '<ap:TopicViewGroup ViewIndex="0" Dirty="0000000000000001"><ap:Collapsed Collapsed="true" Dirty="0000000000000001"/></ap:TopicViewGroup>'; }
+    const font = n.ref ? '<ap:Font Italic="true" Color="ff808080"/>' : n.kids.length ? '<ap:Font Bold="true"/>' : '<ap:Font/>';
+    x += `<ap:Text PlainText="${xmlEsc(n.text)}" ReadOnly="false" Dirty="0000000000000001">${font}</ap:Text>`;
+    if (n.u) { const L = noteLines(n.u); if (n.ref) L.unshift('Polyhierarchy – narrower concepts under: ' + pathOf(n.u).map(labU).join(' › '));
+      x += `<ap:NotesGroup><ap:NotesXhtmlData PreviewPlainText="${xmlEsc(L[0].slice(0, 100))}" Dirty="0000000000000001"><xhtml:html xmlns:xhtml="http://www.w3.org/1999/xhtml">${L.map(l => '<xhtml:p>' + xmlEsc(l) + '</xhtml:p>').join('')}</xhtml:html></ap:NotesXhtmlData></ap:NotesGroup>`;
+      x += `<ap:Hyperlink HyperlinkSourceHandling="urn:mindjet:CopySource" HyperlinkType="urn:mindjet:Unknown" Dirty="0000000000000001" Name="" Url="${xmlEsc(n.u)}" Title="${xmlEsc(linkTitle(n.u))}" Hidden="false" Target="" Absolute="false" CachedName="" CachedDocumentExtension="" TitleAutoCreated="false"/>`; }
+    return x + '</ap:Topic>';
+  };
+  return '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<ap:Map xmlns:ap="http://schemas.mindjet.com/MindManager/Application/2003" xmlns:cor="http://schemas.mindjet.com/MindManager/Core/2003" xmlns:pri="http://schemas.mindjet.com/MindManager/Primitive/2003" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OId="' + oid() + '" Gen="0000000000000000" Dirty="0000000000000001"><ap:OneTopic>' + t(root) + '</ap:OneTopic></ap:Map>';
+}
+function makeMm(root) {
+  const t = n => {
+    let a = `TEXT="${xmlEsc(n.text)}"`; if (n.depth >= 2 && n.kids.length) a += ' FOLDED="true"'; if (n.ref) a += ' COLOR="#808080"'; if (n.u) a += ` LINK="${xmlEsc(n.u)}"`;
+    let x = `<node ${a}>`; if (n.ref) x += '<font ITALIC="true" NAME="SansSerif" SIZE="12"/>';
+    if (n.u) { const L = noteLines(n.u); if (n.ref) L.unshift('Polyhierarchy – narrower concepts under: ' + pathOf(n.u).map(labU).join(' › ')); x += '<richcontent TYPE="NOTE"><html><head/><body>' + L.map(l => '<p>' + xmlEsc(l) + '</p>').join('') + '</body></html></richcontent>'; }
+    return x + n.kids.map(t).join('') + '</node>';
+  };
+  return '<map version="1.0.1">' + t(root) + '</map>';
+}
+
+/* ---------- AAT aus dem Getty-Dump ---------- */
+function aatDialog() {
+  buildIndex();
+  const used = new Set();
+  for (const c of C.values()) if (inW(c)) { if (c.uri.startsWith(AAT_NS)) used.add(c.uri.slice(AAT_NS.length)); for (const m of MATCH) for (const u of c.match[m]) if (u.startsWith(AAT_NS)) used.add(u.slice(AAT_NS.length)); for (const b of c.broader) if (b.startsWith(AAT_NS)) used.add(b.slice(AAT_NS.length)); }
+  const ids = h('textarea', { id: 'aIds', rows: 4, placeholder: 'z. B. 300011054, aat:300264551, http://vocab.getty.edu/aat/300036926' }); ids.value = [...used].sort().join(', ');
+  const anc = h('input', { type: 'checkbox', id: 'aAnc', checked: true }); const langs = h('input', { id: 'aLangs', value: 'de,en,it' });
+  const gettyFirst = h('input', { type: 'checkbox', id: 'aFirst', checked: true });
+  const into = h('input', { type: 'checkbox', id: 'aInto', checked: false });
+  const files = h('input', { type: 'file', id: 'aFiles', multiple: true, accept: '.nt' });
+  const prog = h('div', { class: 'progress' }, h('div')); const log = h('div', { class: 'log', text: 'Bereit.' });
+  const run = h('button', { class: 'btn primary', text: 'Extract concepts' });
+  run.onclick = async () => {
+    const want = [...new Set((ids.value.match(/\d{9}/g) || []))];
+    if (!want.length) { toast('Please enter AAT numbers.'); return; }
+    if (!files.files.length) { toast('Please select the .nt files of the Getty dump.'); return; }
+    run.disabled = true;
+    try {
+      const tr = await aatFromDump([...files.files], want, { ancestors: anc.checked, langs: langs.value.split(',').map(s => s.trim()).filter(Boolean) }, (msg, frac) => { if (msg) log.textContent += '\n' + msg; log.scrollTop = 1e9; if (frac != null) prog.firstChild.style.width = Math.round(frac * 100) + '%'; });
+      const r = ingest(tr, { id: 'lib:Getty AAT', name: 'Getty AAT (from dump)', kind: 'AAT', graph: AAT_NS }, { prefOverride: gettyFirst.checked });
+      for (const u of r.conceptUris) { const c = C.get(u); if (!c.schemes.size) c.schemes.add(AAT_NS); }
+      if (into.checked) for (const id of want) { const c = C.get(AAT_NS + id); if (c) c.schemes.add(P.scheme); }
+      const missing = want.filter(id => !C.get(AAT_NS + id) || !Object.keys(C.get(AAT_NS + id).pref).length);
+      log.textContent += `\nDone: ${r.conceptUris.length} AAT concepts taken over.` + (missing.length ? '\nNot in dump: ' + missing.join(', ') : '');
+      OPENLIB.add('src:lib:Getty AAT'); refreshViews();
+    } catch (e) { log.textContent += '\nFehler: ' + e.message; }
+    run.disabled = false;
+  };
+  openDialog('Take over AAT concepts from the Getty dump', [
+    h('p', { text: 'Select the unpacked N-Triples files of the Getty dump (explicit.zip). The files are read only in this browser, nothing is uploaded. Required are AATOut_1Subjects.nt, AATOut_2Terms.nt, AATOut_ScopeNotes.nt and AATOut_HierarchicalRels.nt; further files do no harm but take longer.' }),
+    h('label', { class: 'grid2' }, h('span', { class: 'muted', text: 'AAT numbers (prefilled: those used in the working thesaurus)' })), ids,
+    h('div', { class: 'grid2' }, h('label', null, 'Languages for labels and scope notes', langs), h('label', null, 'Dump files (.nt)', files)),
+    h('label', { class: 'check' }, anc, 'Include Getty broader concepts up to the facet'),
+    h('label', { class: 'check' }, gettyFirst, 'Getty labels take precedence (own differing labels become alternative labels)'),
+    h('label', { class: 'check' }, into, 'Also add the given concepts to the working thesaurus'),
+    prog, log], [run]);
+}
+async function* lines(file, onBytes) {
+  const reader = file.stream().pipeThrough(new TextDecoderStream()).getReader(); let buf = '', read = 0;
+  while (true) { const { value, done } = await reader.read(); if (done) break; read += value.length; buf += value; let i;
+    let start = 0; while ((i = buf.indexOf('\n', start)) >= 0) { yield buf.slice(start, i); start = i + 1; } buf = buf.slice(start); onBytes && onBytes(read); }
+  if (buf) yield buf;
+}
+const NTRE = /^(<[^>]*>|_:\S+)\s+<([^>]*)>\s+(.*?)\s*\.\s*$/;
+async function aatFromDump(files, ids, o, report) {
+  const total = files.reduce((a, f) => a + f.size, 0) * (o.ancestors ? 3 : 2); let doneBytes = 0;
+  const pass = async (label, fn) => { report(label); for (const f of files) { const base = doneBytes; report('  ' + f.name); for await (const ln of lines(f, b => report && (doneBytes = base + b * 1, 0))) fn(ln); doneBytes = base + f.size; report(null, doneBytes / total); } };
+  const want = new Set(ids.map(i => '<' + AAT_NS + i + '>'));
+  if (o.ancestors) {
+    const par = new Map(); const BP = 'http://vocab.getty.edu/ontology#broaderPreferred';
+    await pass('Pass 1: Getty hierarchy …', ln => { if (ln.includes('broaderPreferred')) { const m = ln.match(NTRE); if (m && m[2] === BP) par.set(m[1], m[3].trim()); } });
+    const todo = [...want]; while (todo.length) { const p = par.get(todo.pop()); if (p && !want.has(p)) { want.add(p); todo.push(p); } }
+    report(`  with broader concepts: ${want.size} concepts`);
+  }
+  const keep = []; const nodes = new Set();
+  const NODEP = new Set([SK('scopeNote'), NS.xl + 'prefLabel', NS.xl + 'altLabel', NS.gvp + 'prefLabelGVP']);
+  await pass('Pass 2: concepts …', ln => { if (!ln.startsWith('<http://vocab.getty.edu/aat/')) return; const sEnd = ln.indexOf('>') + 1; if (!want.has(ln.slice(0, sEnd))) return; const m = ln.match(NTRE); if (!m) return; keep.push(ln); if (NODEP.has(m[2]) && m[3].startsWith('<')) nodes.add(m[3].trim()); });
+  if (nodes.size) {
+    const VP = new Set([NS.rdf + 'value', NS.xl + 'literalForm', NS.dct + 'language']);
+    await pass(`Pass 3: ${nodes.size} scope notes and terms …`, ln => { if (ln[0] !== '<') return; const sEnd = ln.indexOf('>') + 1; if (!nodes.has(ln.slice(0, sEnd))) return; const m = ln.match(NTRE); if (m && VP.has(m[2])) keep.push(ln); });
+  }
+  report(null, 1);
+  const raw = new N3.Parser({ format: 'N-Triples' }).parse(keep.join('\n')).map(q => ({ s: termFromN3(q.subject), p: q.predicate.value, o: termFromN3(q.object) }));
+  return rawGettyToSkos(raw, [...want].map(w => w.slice(1, -1)), o.langs);
+}
+function rawGettyToSkos(raw, uris, langs) {
+  const by = new Map(); for (const t of raw) { if (!by.has(t.s.v)) by.set(t.s.v, []); by.get(t.s.v).push(t); }
+  const objs = (s, p) => (by.get(s) || []).filter(t => t.p === p).map(t => t.o);
+  const okL = l => !langs.length || !l || langs.includes(l.split('-')[0]);
+  const out = []; const add = (s, p, o) => out.push({ s: { t: 'u', v: s }, p, o });
+  for (const u of uris) {
+    if (!by.has(u)) continue;
+    add(u, NS.rdf + 'type', { t: 'u', v: SK('Concept') }); add(u, SK('inScheme'), { t: 'u', v: AAT_NS });
+    let pl = objs(u, SK('prefLabel')); if (!pl.length) pl = objs(u, NS.xl + 'prefLabel').flatMap(t => objs(t.v, NS.xl + 'literalForm'));
+    let al = objs(u, SK('altLabel')); if (!al.length) al = objs(u, NS.xl + 'altLabel').flatMap(t => objs(t.v, NS.xl + 'literalForm'));
+    const seen = new Set();
+    for (const l of pl) if (l.t === 'l' && okL(l.l)) { if (seen.has(l.l)) add(u, SK('altLabel'), l); else { seen.add(l.l); add(u, SK('prefLabel'), l); } }
+    for (const l of al) if (l.t === 'l' && okL(l.l)) add(u, SK('altLabel'), l);
+    for (const sn of objs(u, SK('scopeNote'))) { const vs = sn.t === 'l' ? [sn] : objs(sn.v, NS.rdf + 'value'); for (const v of vs) if (okL(v.l)) add(u, SK('scopeNote'), v); }
+    for (const b of objs(u, NS.gvp + 'broaderPreferred')) if (b.v !== u) add(u, SK('broader'), b);
+    for (const id of objs(u, NS.dc + 'identifier')) add(u, SK('notation'), id);
+    for (const ps of objs(u, NS.gvp + 'parentString')) add(u, NS.gvp + 'parentString', ps);
+    for (const m of ['exactMatch', 'closeMatch']) for (const x of objs(u, SK(m))) add(u, SK(m), x);
+    add(u, NS.dct + 'source', { t: 'u', v: 'http://vocab.getty.edu/page/aat/' + u.slice(AAT_NS.length) });
+  }
+  return out;
+}
+
+/* ---------- Prüfen ---------- */
+function validateDialog() {
+  buildIndex(); const issues = [];
+  const w = [...C.values()].filter(inW);
+  for (const c of w) {
+    if (!Object.values(c.pref).some(v => v)) issues.push(['Error', c.uri, 'no preferred label']);
+    for (const [v, l] of c.alt) if (Object.entries(c.pref).some(([pl, pv]) => pl === l && pv.toLowerCase() === v.toLowerCase())) issues.push(['Error', c.uri, `alternative label "${v}" equals the preferred one`]);
+    if (c.broader.includes(c.uri) || isAncestor(c.uri, c.uri)) issues.push(['Error', c.uri, 'cycle in the hierarchy']);
+    if (!wParents(c).length && !(IDX.wkids.get(c.uri) || []).length) issues.push(['Note', c.uri, 'neither broader nor narrower concept']);
+    const ps = wParents(c); for (const p of ps) if (ps.some(q => q !== p && isAncestor(p, q))) issues.push(['Note', c.uri, `broader concept "${labU(p)}" is already an ancestor of another broader concept (redundant)`]);
+    for (const b of c.broader) if (!C.has(b)) issues.push(['Note', c.uri, 'broader concept without data: ' + b]);
+  }
+  const byL = new Map(); for (const c of w) { const l = lab(c).toLowerCase(); if (!byL.has(l)) byL.set(l, []); byL.get(l).push(c.uri); }
+  for (const [l, us] of byL) if (us.length > 1) issues.push(['Note', us[0], `same label for ${us.length} concepts: ${us.map(u => cid(C.get(u))).join(', ')}`]);
+  const list = h('div');
+  const errs = issues.filter(i => i[0] === 'Error').length;
+  for (const [k, u, msg] of issues.slice(0, 500)) list.append(h('div', { class: 'issue' }, h('span', { class: 'k' + (k === 'Note' ? ' w' : ''), text: k }),
+    h('div', null, h('a', { text: labU(u) + ' (' + cid(C.get(u) || { uri: u, notation: '' }) + ')', onclick: () => { closeDialog(); select(u, true); } }), ' – ', msg)));
+  openDialog('Validation', [h('p', { text: `${w.length} concepts checked: ${errs} errors, ${issues.length - errs} notes.` + (issues.length > 500 ? ' Shown: the first 500.' : '') }), list], []);
+}
+
+/* ---------- Export ---------- */
+function exportRows() {
+  buildIndex();
+  const langs = new Set(); for (const c of C.values()) if (inW(c)) for (const l of Object.keys(c.pref)) langs.add(l);
+  const L = [...langs].sort(langSort);
+  const head = ['id', 'uri', ...L.map(l => 'prefLabel_' + (l || 'none')), 'altLabels', 'definition', 'scopeNote', 'broader_ids', 'broader_labels', 'exactMatch', 'closeMatch', 'origin'];
+  const rows = [head];
+  for (const c of [...C.values()].filter(inW).sort((a, b) => cid(a).localeCompare(cid(b), 'de', { numeric: true })))
+    rows.push([cid(c), c.uri, ...L.map(l => c.pref[l] || ''), c.alt.map(([v, l]) => (l ? l + ': ' : '') + v).join(' | '),
+      c.def.map(([v, l]) => (l ? l + ': ' : '') + v).join(' | '), c.scope.map(([v, l]) => (l ? l + ': ' : '') + v).join(' | '),
+      wParents(c).map(b => cid(C.get(b))).join(' | '), wParents(c).map(labU).join(' | '), c.match.exactMatch.join(' | '), c.match.closeMatch.join(' | '), extKind(c.uri) || 'own']);
+  return rows;
+}
+async function doAct(a) {
+  for (const p of document.querySelectorAll('.menu > .pop')) p.hidden = true;
+  switch (a) {
+    case 'openWorking': return openSkos(true);
+    case 'openLibrary': return openSkos(false);
+    case 'openExcel': return excelDialog();
+    case 'openMindmap': return mindmapDialog();
+    case 'openAat': return aatDialog();
+    case 'prefixes': return prefixDialog();
+    case 'validate': return validateDialog();
+    case 'newTop': return newConceptDialog(SEL && inW(C.get(SEL)) ? SEL : null);
+    case 'collapseAll': OPEN.clear(); return renderTree();
+    case 'newProject': {
+      const nm = h('input', { value: 'Neuer Thesaurus' }); const sch = h('input', { value: 'http://example.org/thesaurus' }); const pre = h('input', { value: 'th' }); const ns = h('input', { value: 'http://example.org/concept/' });
+      return openDialog('New, empty project', [h('p', { class: 'muted', text: 'The current working state will be discarded. Save it as a project file first if you still need it.' }),
+        h('div', { class: 'grid2' }, h('label', null, 'Name', nm), h('label', null, 'URI of the scheme', sch), h('label', null, 'Own prefix', pre), h('label', null, 'Namespace for new concepts', ns))],
+        [h('button', { class: 'btn primary', text: 'Create', onclick: () => { C.clear(); SRC.clear(); P = freshProject(); P.name = nm.value; P.scheme = sch.value; P.schemeLabel = { en: nm.value }; P.prefixes.push({ p: pre.value, ns: ns.value, digits: 6, own: true }); P.defaultPrefix = pre.value; UNDO.length = 0; SEL = null; OPEN.clear(); closeDialog(); refreshViews(); } })]);
+    }
+    case 'openProject': { const [f] = await pickFile('.json'); if (!f) return; try { const t = loadProjectJson(await f.text()); toast('Project opened (saved ' + new Date(t).toLocaleString('en-GB') + ')'); refreshViews(); } catch (e) { toast(e.message, 6000); } return; }
+    case 'saveProject': return saveFile(fileBase() + '_projekt.json', projectJson());
+    case 'exportTtl': { if (!(await getDL())) return saveFile(fileBase() + '.ttl', makeTtl()); const z = new JSZip(); z.file(fileBase() + '.ttl', makeTtl()); return saveFile(fileBase() + '_skos.zip', await z.generateAsync({ type: 'blob', compression: 'DEFLATE' })); }
+    case 'exportNq': {
+      const { text, stats } = makeNq(); toast('Graphen – ' + stats.join(' · ') + ' Tripel', 6000);
+      if (!(await getDL())) return saveFile(fileBase() + '.nq', text);
+      const z = new JSZip(); z.file(fileBase() + '.nq', text); return saveFile(fileBase() + '_nquads.zip', await z.generateAsync({ type: 'blob', compression: 'DEFLATE' }));
+    }
+    case 'copyTtl': { const t = makeTtl(); try { await navigator.clipboard.writeText(t); toast('Turtle copied (' + Math.round(t.length / 1024) + ' KB)'); } catch (e) { const ta = h('textarea', { rows: 16, style: 'width:100%' }); ta.value = t; openDialog('Turtle', [h('p', { class: 'muted', text: 'Copying was not allowed – select the text and copy it with Ctrl+C.' }), ta], []); ta.select(); } return; }
+    case 'exportXlsx': { const ws = XLSX.utils.aoa_to_sheet(exportRows()); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'begriffe'); const out = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }); return saveFile(fileBase() + '_begriffe.xlsx', new Blob([out])); }
+    case 'exportMindmap': case 'exportMm': {
+      const root = mindmapTree(); let name, data;
+      if (a === 'exportMindmap') { const mm = new JSZip(); mm.file('Document.xml', makeMmap(root)); name = fileBase() + '.mmap'; data = await mm.generateAsync({ type: 'blob', compression: 'DEFLATE' }); }
+      else { name = fileBase() + '.mm'; data = makeMm(root); }
+      if (await getDL()) { const z = new JSZip(); z.file(name, data); return saveFile(name.replace('.', '_') + '.zip', await z.generateAsync({ type: 'blob', compression: 'DEFLATE' })); }  // im claude.ai-Viewer sind .mmap/.mm nicht erlaubt
+      return saveFile(name, data);
+    }
+  }
+}
+document.addEventListener('click', e => {
+  const m = e.target.closest('[data-menu]');
+  if (m) { const pop = document.getElementById(m.dataset.menu); const was = pop.hidden; for (const p of document.querySelectorAll('.menu > .pop')) p.hidden = true; pop.hidden = !was; e.stopPropagation(); return; }
+  const a = e.target.closest('[data-act]'); if (a) { doAct(a.dataset.act); return; }
+  if (!e.target.closest('.menu')) for (const p of document.querySelectorAll('.menu > .pop')) p.hidden = true;
+});
+$('#bUndo').addEventListener('click', undo);
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); undo(); } });
+let qT; $('#q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(renderTree, 180); });
+$('#treeLang').addEventListener('change', e => { P.dispLang = e.target.value; buildIndex(); renderTree(); renderLib(); renderCard(); autosave(); });
+let qlT; $('#qLib').addEventListener('input', () => { clearTimeout(qlT); qlT = setTimeout(renderLib, 180); });
+function switchTab(id) { for (const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', b.dataset.tab === id); for (const p of document.querySelectorAll('main > .panel')) p.classList.toggle('on', p.id === id); }
+for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('click', () => switchTab(b.dataset.tab));
+
+/* ---------- Dateien auf die Seite ziehen ---------- */
+let fdT; const fd = h('div', { class: 'filedrop', hidden: true, text: 'Drop file here – SKOS, Excel, mind map or project' }); document.body.append(fd);
+window.addEventListener('dragover', e => { if (DRAG || !e.dataTransfer.types.includes('Files')) return; e.preventDefault(); fd.hidden = false; clearTimeout(fdT); fdT = setTimeout(() => fd.hidden = true, 300); });
+window.addEventListener('drop', async e => {
+  if (DRAG || !e.dataTransfer.files.length) return; e.preventDefault(); fd.hidden = true;
+  const f = e.dataTransfer.files[0]; const n = f.name.toLowerCase();
+  if (isQuadFile(n)) { try { graphDialog(parseQuads(await f.text(), f.name), f.name, true); } catch (err) { toast('Error: ' + err.message, 6000); } return; }
+  if (/\.(ttl|rdf|owl|nt|n3|xml)$/.test(n) && !n.endsWith('.mm')) {
+    openDialog('Load "' + f.name + '"', [h('p', { text: 'How should the thesaurus be loaded?' })], [
+      h('button', { class: 'btn', text: 'Into the library', onclick: async () => { closeDialog(); try { const r = loadIntoLibrary(parseRdf(await f.text(), f.name), f.name); OPENLIB.add('src:lib:' + f.name); toast(r.conceptUris.length + ' concepts loaded into the library'); refreshViews(); } catch (err) { toast('Error: ' + err.message, 6000); } } }),
+      h('button', { class: 'btn primary', text: 'Open as working thesaurus', onclick: async () => { closeDialog(); try { const r = loadAsWorking(parseRdf(await f.text(), f.name), f.name); SEL = null; toast(r.conceptUris.length + ' concepts opened'); refreshViews(); } catch (err) { toast('Error: ' + err.message, 6000); } } })]);
+  } else if (/\.json$/.test(n)) { try { loadProjectJson(await f.text()); refreshViews(); toast('Project opened'); } catch (err) { toast(err.message, 6000); } }
+  else toast('For Excel, mind maps and the AAT dump please use the "Load" menu.');
+});
+
+/* ================= Start ================= */
+(async function start() {
+  P = freshProject(); buildIndex(); renderStatus(); renderTree(); renderLib(); renderCard();
+  const saved = await idbGet('project');
+  if (saved) { try { const t = loadProjectJson(saved); refreshViews(); toast('Last working state restored (' + new Date(t).toLocaleString('en-GB') + ')'); return; } catch (e) { /* weiter */ } }
+})();
+</script>
